@@ -1,0 +1,209 @@
+---
+title: "Performance"
+description: "Monitor and optimize WordPress performance"
+---
+
+Performance gives you a dashboard for diagnosing and cleaning up database bloat, managing WordPress transient caches, and monitoring object cache (Redis) status. All operations are non-destructive by default — you choose what to remove.
+
+To open Performance, click **WP Manager → Performance** in the WordPress admin sidebar.
+
+The page has four tabs: **Overview**, **Transients**, **DB Cleanup**, and **Object Cache**.
+
+## Object cache banner
+
+At the top of the page, a banner shows whether an object cache (such as Redis) is currently active. If no object cache is enabled, the banner recommends installing one for performance gains.
+
+<Tabs>
+  <Tab title="Overview">
+
+## Overview tab
+
+The Overview tab shows eight stat cards, each with a count of cleanable items in your database. Cards with a non-zero count are highlighted in amber to draw attention.
+
+<CardGroup cols={2}>
+  <Card title="Post Revisions" icon="file-text">
+    Old draft revisions saved automatically by the WordPress editor. Each revision stores a full copy of post content, which can add up significantly on high-traffic editorial sites.
+  </Card>
+  <Card title="Auto-Drafts" icon="file-text">
+    Unsaved auto-draft posts created by the block editor during writing sessions. These are unused and safe to remove.
+  </Card>
+  <Card title="Trashed Content" icon="trash-2">
+    Posts and pages sitting in the WordPress trash. These remain in the database until emptied.
+  </Card>
+  <Card title="Spam Comments" icon="message-square">
+    Comments marked as spam by WordPress or a spam-filtering plugin.
+  </Card>
+  <Card title="Pending Comments" icon="message-square">
+    Unapproved comments awaiting moderation.
+  </Card>
+  <Card title="Orphaned Post Meta" icon="database">
+    Rows in `wp_postmeta` whose parent post no longer exists. These are left behind when posts are hard-deleted without proper cleanup.
+  </Card>
+  <Card title="Orphaned Comment Meta" icon="database">
+    Rows in `wp_commentmeta` whose parent comment no longer exists.
+  </Card>
+  <Card title="Expired Transients" icon="timer">
+    Transient cache entries stored in `wp_options` that have already passed their expiry time. WordPress does not always clean these up automatically.
+  </Card>
+</CardGroup>
+
+If any cleanable items are found, an amber prompt at the bottom of the tab directs you to the **DB Cleanup** tab.
+
+  </Tab>
+  <Tab title="Transients">
+
+## Transients tab
+
+The Transients tab lists all transients stored in the `wp_options` table, with their name, size, and expiry time.
+
+### Reading the table
+
+| Column | Description |
+|--------|-------------|
+| **Name** | The transient key. An `expired` badge marks entries that have already passed their expiry time. |
+| **Size** | The size of the serialized value in bytes, KB, or MB. |
+| **Expires** | The expiry timestamp, or `Persistent` for transients with no expiry set. Expired entries are highlighted in red. |
+
+### Searching transients
+
+Type a partial transient name in the search box and click **Search** to filter the list. Click **Clear** to reset the search.
+
+### Purging expired transients
+
+Click **Purge Expired** to delete all expired transients in a single operation. The button shows the current count of expired transients. After purging, the Overview and Transients tabs both refresh automatically.
+
+### Deleting individual transients
+
+Click the trash icon on any row to delete a single transient immediately.
+
+<Warning>
+Deleting a transient removes cached data. WordPress or the plugin that created it will regenerate the transient on the next request that needs it, which may cause a brief slowdown.
+</Warning>
+
+The list is paginated at 50 entries per page.
+
+  </Tab>
+  <Tab title="DB cleanup">
+
+## DB cleanup tab
+
+DB Cleanup lets you select one or more categories of database items and delete them all at once.
+
+### Selecting items
+
+Each item in the list shows:
+
+- An icon and description of what the item type represents
+- A count of how many items of that type exist in your database
+- A checkbox to include it in the cleanup
+
+Click anywhere on a row to toggle its checkbox. Use **All** to select every category, or **None** to deselect everything.
+
+### Running the cleanup
+
+<Steps>
+  <Step title="Select categories">
+    Check the categories you want to remove. The total item count for all selected categories is shown at the bottom of the list.
+  </Step>
+  <Step title="Click Run Cleanup">
+    Click the **Run Cleanup** button. A confirmation dialog lists each selected category and its item count.
+  </Step>
+  <Step title="Confirm">
+    Click **Yes, delete all** in the confirmation dialog. The cleanup runs immediately and a toast reports how many total items were removed.
+  </Step>
+</Steps>
+
+<Warning>
+Database cleanup is permanent. Deleted revisions, auto-drafts, spam comments, orphaned meta rows, and expired transients cannot be recovered. Take a database backup before running a large cleanup for the first time.
+</Warning>
+
+The available cleanup categories are:
+
+| Category | What is deleted |
+|----------|-----------------|
+| **Post Revisions** | All revision posts (`post_type = 'revision'`) |
+| **Auto-Drafts** | All auto-draft posts (`post_status = 'auto-draft'`) |
+| **Trashed Content** | All posts and pages in the trash |
+| **Spam Comments** | All comments with `comment_approved = 'spam'` |
+| **Pending Comments** | All comments with `comment_approved = '0'` |
+| **Orphaned Post Meta** | `wp_postmeta` rows with no matching post ID |
+| **Orphaned Comment Meta** | `wp_commentmeta` rows with no matching comment ID |
+| **Expired Transients** | Transients whose expiry timestamp is in the past |
+
+  </Tab>
+  <Tab title="Object cache">
+
+## Object cache tab
+
+The Object Cache tab shows the status of your Redis object cache and, when connected, live performance statistics.
+
+### Status indicators
+
+The top of the tab shows the current connection state:
+
+| Status | Meaning |
+|--------|---------|
+| **Connected** (green) | Redis is reachable and the drop-in is active |
+| **Not enabled** (grey) | No object cache drop-in is installed |
+| **Connection error** (red) | A drop-in is installed but Redis is unreachable |
+| **PhpRedis not loaded** (amber) | The PhpRedis PHP extension is required but not installed |
+
+### Enabling object cache
+
+If Redis is running on your server but no drop-in is installed, the **Enable Object Cache** button appears. Clicking it installs WP Manager Pro's bundled Redis drop-in (`wp-content/object-cache.php`). The `wp-content` directory must be writable.
+
+### Status panel
+
+The **Status** section shows four diagnostic rows:
+
+- **Object Cache Drop-in** — whether the drop-in file exists and whether it was installed by WP Manager Pro or another plugin
+- **Redis Reachable** — whether PHP can connect to your Redis server
+- **wp-content Writable** — whether the drop-in can be installed or updated
+- **Cache Status** — the overall active/inactive state
+
+### Connection details
+
+When a connection is configured, the **Connection** section lists the scheme, host, port, database index, timeout values, key prefix, and PhpRedis version.
+
+### Live Redis statistics
+
+When the status is **Connected**, eight stat cards show real-time metrics from Redis:
+
+| Metric | Description |
+|--------|-------------|
+| **Hit Ratio** | Percentage of cache lookups that found a result |
+| **Cached Keys** | Total number of keys currently stored in Redis |
+| **Memory Used** | Memory consumed by the Redis instance |
+| **Uptime** | How long the Redis process has been running |
+| **Cache Hits** | Total successful cache reads since Redis started |
+| **Cache Misses** | Total failed cache reads since Redis started |
+| **Clients** | Number of clients currently connected to Redis |
+| **Ops/sec** | Commands processed per second |
+
+### WP request stats
+
+Below the Redis stats, a **This Request** section shows WordPress-level cache metrics for the current admin page request: WP Cache Hits, WP Cache Misses, the number of global cache groups, and the number of ignored groups.
+
+### Flush cache
+
+When connected, the **Flush Cache** button deletes all keys from the Redis database. Use this after making significant content or configuration changes to ensure no stale data is served.
+
+### Diagnostics tab
+
+The **Diagnostics** sub-tab displays the raw diagnostics text returned by the object cache drop-in, useful for debugging connection or configuration issues.
+
+  </Tab>
+</Tabs>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/performance/overview` | Overview counts |
+| `GET` | `/wp-json/wp-manager-pro/v1/performance/transients` | List transients (searchable, paginated) |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/performance/transients` | Delete a single transient by name |
+| `POST` | `/wp-json/wp-manager-pro/v1/performance/transients/purge-expired` | Delete all expired transients |
+| `POST` | `/wp-json/wp-manager-pro/v1/performance/cleanup` | Run database cleanup for selected types |
+| `GET` | `/wp-json/wp-manager-pro/v1/performance/object-cache` | Get object cache status and stats |
+| `POST` | `/wp-json/wp-manager-pro/v1/performance/object-cache/flush` | Flush the Redis cache |
+| `POST` | `/wp-json/wp-manager-pro/v1/performance/object-cache/drop-in` | Install, enable, or disable the drop-in |

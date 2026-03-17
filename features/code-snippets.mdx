@@ -1,0 +1,114 @@
+---
+title: "Code Snippets"
+description: "Run custom PHP, CSS, and JavaScript directly from the dashboard"
+---
+
+Code Snippets lets you inject custom PHP, CSS, and JavaScript into your WordPress site without editing theme files or using a child theme. Each snippet is stored in the `wp_wmp_snippets` database table and can be toggled on or off at any time.
+
+To open Code Snippets, click **WP Manager → Code Snippets** in the WordPress admin sidebar.
+
+<Warning>
+PHP snippets are executed via `eval()` on every page load. Only enable PHP code you have written yourself or fully trust. A syntax error in a PHP snippet can cause a fatal error on your site.
+</Warning>
+
+## How snippets work
+
+| Type | Hook | Effect |
+|------|------|--------|
+| **PHP** | `init` | Code runs on every WordPress request before content is output |
+| **CSS** | `wp_head` | Styles are written into the `<head>` element |
+| **JavaScript** | `wp_footer` | Script is output just before the closing `</body>` tag |
+
+Only snippets with the toggle set to **Active** run on the frontend. Disabled snippets are saved but do nothing until re-enabled.
+
+## Creating a snippet
+
+<Steps>
+  <Step title="Open the form">
+    Click **New Snippet** in the top-right corner of the page.
+  </Step>
+  <Step title="Fill in the details">
+    Enter a **Title** (required) and an optional **Description** to remind yourself what the snippet does.
+  </Step>
+  <Step title="Choose the type">
+    Select **PHP**, **CSS**, or **JavaScript** from the Type dropdown. The Monaco editor switches to the correct syntax highlighting automatically.
+  </Step>
+  <Step title="Write your code">
+    Type or paste your code into the Monaco editor. The editor provides syntax highlighting, line numbers, and word-wrap for all three languages.
+  </Step>
+  <Step title="Save">
+    Click **Create Snippet**. The snippet is saved in a disabled state — enable the toggle on the snippet card to make it active.
+  </Step>
+</Steps>
+
+## Managing snippets
+
+Each snippet card in the list shows:
+
+- An **enable/disable toggle** on the left
+- The **title** and a colour-coded type badge (`PHP`, `CSS`, or `JS`)
+- An **Active** badge when the snippet is enabled
+- A **description** if one was provided
+- A **code preview** (first few lines)
+- The **last updated** timestamp
+- **Edit** and **Delete** action buttons
+
+Toggling the switch takes effect immediately — no save button is required.
+
+## Code examples
+
+<Tabs>
+  <Tab title="PHP">
+
+This example disables the WordPress admin bar for all users who are not administrators:
+
+```php
+if ( ! current_user_can( 'manage_options' ) ) {
+    add_filter( 'show_admin_bar', '__return_false' );
+}
+```
+
+PHP snippets run on the `init` hook, so WordPress functions and the current user object are available.
+
+  </Tab>
+  <Tab title="CSS">
+
+This example hides the default WordPress login logo and replaces the page background:
+
+```css
+#login h1 a {
+    display: none;
+}
+
+body.login {
+    background-color: #f0f4f8;
+}
+```
+
+CSS snippets are output inside a `<style>` tag in `wp_head`, so they apply globally across the frontend.
+
+  </Tab>
+  <Tab title="JavaScript">
+
+This example logs a message to the browser console on every page load:
+
+```javascript
+console.log('WP Manager Pro JS snippet loaded on:', window.location.pathname);
+```
+
+JavaScript snippets are output inside a `<script>` tag in `wp_footer`, after all other scripts have loaded.
+
+  </Tab>
+</Tabs>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/snippets` | List all snippets |
+| `POST` | `/wp-json/wp-manager-pro/v1/snippets` | Create a snippet |
+| `PUT` | `/wp-json/wp-manager-pro/v1/snippets/{id}` | Update a snippet |
+| `POST` | `/wp-json/wp-manager-pro/v1/snippets/{id}/toggle` | Toggle enabled state |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/snippets/{id}` | Delete a snippet |
+
+All endpoints require a valid `X-WP-Nonce` header and the `manage_options` capability.

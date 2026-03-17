@@ -1,0 +1,83 @@
+---
+title: "Authentication"
+description: "How to authenticate with the WP Manager Pro REST API"
+---
+
+The WP Manager Pro REST API uses WordPress's built-in nonce authentication. There are no API keys or OAuth flows — access is tied directly to a logged-in WordPress session.
+
+## How it works
+
+WordPress issues a short-lived nonce scoped to the `wp_rest` action. You include that nonce in every API request using the `X-WP-Nonce` header. WordPress validates the nonce and the user's capability before executing the route callback.
+
+## Generating the nonce server-side
+
+The plugin injects the nonce into the page via `wp_localize_script` when the admin UI loads. If you are building your own integration, generate the nonce with:
+
+```php
+$nonce = wp_create_nonce( 'wp_rest' );
+```
+
+This is typically exposed to JavaScript through `wp_localize_script` or `wp_add_inline_script`:
+
+```php
+wp_localize_script( 'my-script', 'wpApiSettings', [
+    'nonce' => wp_create_nonce( 'wp_rest' ),
+    'root'  => esc_url_raw( rest_url() ),
+] );
+```
+
+## Sending the nonce in requests
+
+Pass the nonce value in the `X-WP-Nonce` header on every request:
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/plugins \
+  -H "X-WP-Nonce: abc123"
+```
+
+Alternatively, you can pass it as the `_wpnonce` query parameter — though the header approach is preferred:
+
+```bash
+curl "https://yoursite.com/wp-json/wp-manager-pro/v1/plugins?_wpnonce=abc123"
+```
+
+## Browser-based requests
+
+When making requests from the WordPress admin UI in a browser, WordPress automatically sends the authentication cookie alongside each request. The `X-WP-Nonce` header is still required — the cookie alone is not sufficient.
+
+The WP Manager Pro React frontend obtains the nonce from the localized script data and attaches it to every request through a shared API client.
+
+## Capability check
+
+In addition to nonce validation, every route enforces the `manage_options` capability:
+
+```php
+public static function admin_permission() {
+    return current_user_can( 'manage_options' );
+}
+```
+
+If the nonce is valid but the user lacks `manage_options`, the API returns:
+
+```json
+{
+  "code": "rest_forbidden",
+  "message": "Sorry, you are not allowed to do that.",
+  "data": {
+    "status": 403
+  }
+}
+```
+
+## Error responses
+
+Authentication and authorization failures return standard WordPress REST error objects:
+
+| HTTP status | Cause |
+|-------------|-------|
+| `401 Unauthorized` | No nonce provided or nonce is invalid |
+| `403 Forbidden` | Valid nonce but user lacks `manage_options` |
+
+<Info>
+Nonces expire after 24 hours by default. For long-running processes, refresh the nonce before it expires or handle `401` responses by reloading the nonce and retrying.
+</Info>

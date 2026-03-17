@@ -1,0 +1,60 @@
+---
+title: "Debug Tools"
+description: "Toggle WordPress debug flags and view error logs"
+---
+
+Debug Tools lets you toggle WordPress debug constants directly in `wp-config.php` and read your error log from the browser. No manual file editing required.
+
+To open Debug Tools, click **WP Manager → Debug Tools** in the WordPress admin sidebar.
+
+<Warning>
+Enabling `WP_DEBUG` or `WP_DEBUG_DISPLAY` on a production site exposes PHP error messages to all visitors. Only enable these flags on staging or development environments.
+</Warning>
+
+## Debug constants
+
+The **Debug Constants** card lists five WordPress debug flags. Use the toggle switch on each row to enable or disable the constant. Changes are not applied until you click **Save Debug Settings**.
+
+| Constant | Effect |
+|----------|--------|
+| `WP_DEBUG` | Enables WordPress debug mode. Required for the other debug constants to take effect. |
+| `WP_DEBUG_LOG` | Saves PHP errors and notices to `wp-content/debug.log`. |
+| `WP_DEBUG_DISPLAY` | Prints errors directly on screen. Dangerous on production — visitors will see PHP errors. |
+| `SAVEQUERIES` | Records all database queries in the `$wpdb->queries` array. Slows down the site; useful with tools like Query Monitor. |
+| `SCRIPT_DEBUG` | Forces WordPress to load unminified versions of core scripts and stylesheets. Useful for debugging JavaScript. |
+
+Constants flagged as a **Production risk** display a badge when enabled as a reminder to disable them before deploying.
+
+<Note>
+If `wp-config.php` is not writable by the web server, the toggles are disabled and a warning is shown. Make the file writable temporarily, save your changes, and then restrict permissions again.
+</Note>
+
+## Error log viewer
+
+The **Error Log** card displays the last 200 lines of your WordPress error log.
+
+### Log location
+
+WP Manager Pro auto-detects your error log path. It checks for `wp-content/debug.log` first, then falls back to the PHP `error_log` directive. The detected path, file status, and file size are shown in the **Error Log Info** card.
+
+### Filtering by level
+
+Use the **Level** dropdown to filter the displayed log lines by severity:
+
+| Filter | Shows |
+|--------|-------|
+| All Levels | Every log line |
+| Errors only | Lines containing PHP Fatal and Error entries |
+| Warnings | Lines containing PHP Warning entries |
+| Notices | Lines containing PHP Notice entries |
+| Deprecated | Lines containing Deprecated notices |
+
+### Actions
+
+- **Refresh** — reloads the log from disk without clearing it.
+- **Copy** — copies the entire visible log content to your clipboard.
+- **Clear** — truncates the error log file to zero bytes. The file remains on disk; new errors will append to it.
+
+<Tip>
+Enable both `WP_DEBUG` and `WP_DEBUG_LOG`, then reproduce the issue you are debugging. Refresh the log to see the exact error, file path, and line number.
+</Tip>

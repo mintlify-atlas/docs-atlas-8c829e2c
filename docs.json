@@ -1,122 +1,145 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "WP Manager Pro",
+  "theme": "linden",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#94cb04",
+    "light": "#545454",
+    "dark": "#94cb04"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png",
+  "logo": {
+    "light": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png",
+    "dark": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/nurkamol/wp-manager-pro"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/nurkamol/wp-manager-pro"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
+              "installation",
               "quickstart",
-              "development"
+              "requirements"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Site Management",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/dashboard",
+              "features/plugin-manager",
+              "features/theme-manager",
+              "features/file-manager",
+              "features/database-manager",
+              "features/user-manager"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Maintenance & Tools",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "features/maintenance-mode",
+              "features/debug-tools",
+              "features/image-tools",
+              "features/cron-manager",
+              "features/media-manager",
+              "features/reset-tools"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Advanced Features",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "features/code-snippets",
+              "features/redirect-manager",
+              "features/email-smtp",
+              "features/database-backup",
+              "features/audit-log",
+              "features/performance",
+              "features/content-tools",
+              "features/notes"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
+              "security/overview",
+              "security/login-protection",
+              "security/hardening",
+              "security/integrity-check",
+              "security/two-factor-auth",
+              "security/security-scanner"
+            ]
+          },
+          {
+            "group": "Agency & Developer",
+            "pages": [
+              "agency/agency-tools",
+              "agency/developer-utilities",
+              "agency/settings-branding"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api/overview",
+              "api/authentication"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Core Endpoints",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/dashboard",
+              "api/plugins",
+              "api/themes",
+              "api/files",
+              "api/database",
+              "api/users"
+            ]
+          },
+          {
+            "group": "Tools Endpoints",
+            "pages": [
+              "api/maintenance",
+              "api/debug",
+              "api/images",
+              "api/cron",
+              "api/media",
+              "api/reset"
+            ]
+          },
+          {
+            "group": "Advanced Endpoints",
+            "pages": [
+              "api/snippets",
+              "api/redirects",
+              "api/email",
+              "api/backup",
+              "api/audit",
+              "api/security",
+              "api/settings",
+              "api/developer"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

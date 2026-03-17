@@ -1,0 +1,209 @@
+---
+title: "Security Scanner"
+description: "Scan for malware, vulnerabilities, SSL issues, and core integrity"
+---
+
+Security Scanner is a dedicated threat-detection page (separate from the Security Suite) accessible from the **System** group in the sidebar. It performs four independent scans — malware, CVE vulnerabilities, SSL certificate health, and core version checks — and aggregates the results into a unified security score.
+
+To open Security Scanner, click **WP Manager → Security Scanner** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Overview">
+
+## Overview tab
+
+The Overview tab gives you a consolidated view of all scan results.
+
+### Security score
+
+The score ring displays a numeric score from 0 to 100 and a letter grade:
+
+| Score range | Grade |
+|-------------|-------|
+| 100 | A+ |
+| 90–99 | A |
+| 80–89 | B |
+| 70–79 | C |
+| 50–69 | D |
+| 0–29 | F |
+
+The score is computed from completed scan results using the following deductions:
+
+| Condition | Deduction |
+|-----------|-----------|
+| Each critical malware finding | −20 |
+| Each warning malware finding | −5 |
+| Critical CVE vulnerability | −15 |
+| High CVE vulnerability | −10 |
+| Medium CVE vulnerability | −5 |
+| Low / other CVE vulnerability | −2 |
+| No HTTPS | −20 |
+| Invalid or expired SSL certificate | −20 |
+| SSL expiring within 14 days | −10 |
+| SSL expiring within 30 days | −5 |
+| WordPress not on latest version | −10 |
+| PHP is end-of-life | −15 |
+| PHP reaching EOL within 90 days | −5 |
+
+The score only reflects scans that have been run. If you have not run a particular scan, it does not contribute to the score.
+
+### Summary cards
+
+Four summary cards sit beside the score ring, one for each scan type. Each card shows the current result at a glance:
+
+- **Malware Scanner** — file count and number of critical / warning findings
+- **Vulnerabilities** — number of plugins/themes with known CVEs
+- **SSL Certificate** — validity status and days remaining
+- **Core & PHP** — WordPress and PHP version status
+
+Clicking a summary card triggers that individual scan if it has not yet been run.
+
+### Run all scans
+
+Click **Run All Scans** in the top-right of the page to trigger all four scans simultaneously. A spinner is shown while any scan is in progress.
+
+  </Tab>
+  <Tab title="Malware scanner">
+
+## Malware scanner
+
+The malware scanner reads PHP, JS, and HTML files in your plugins and themes directories and checks each file's content against 13 detection patterns.
+
+### Scan scope
+
+Use the scope selector to target your scan:
+
+| Option | Files scanned |
+|--------|---------------|
+| All (plugins + themes) | All PHP/JS/HTML files in both directories |
+| Plugins only | Files in `wp-content/plugins/` |
+| Themes only | Files in `wp-content/themes/` |
+
+The scanner processes up to **8,000 files** per scan. Files larger than **512 KB** are skipped automatically to avoid memory issues on constrained hosts.
+
+### Detection patterns
+
+The scanner checks for the following 13 patterns:
+
+| Pattern | Severity |
+|---------|----------|
+| `eval(base64_decode(…))` | Critical |
+| `eval(gzinflate(…))` | Critical |
+| `eval(gzuncompress(…))` | Critical |
+| `eval(gzdecode(…))` | Critical |
+| `eval(str_rot13(…))` | Critical |
+| `preg_replace` with `/e` modifier | Critical |
+| `assert()` / `system()` / `exec()` / `passthru()` / `shell_exec()` with `$_POST` or `$_GET` input | Critical |
+| Long base64-encoded strings | Warning |
+| Dynamic variable function calls | Warning |
+| Known webshell markers: `FilesMan`, `r57`, `c99` | Critical |
+| `document.write(unescape(…))` JS injection | Warning |
+
+### Reading findings
+
+Each finding shows:
+- **Severity badge** — `Critical` (red) or `Warning` (yellow)
+- **File path** — relative path of the affected file
+- **Line number** — line where the pattern was detected
+- **Pattern description** — which detection rule was matched
+- **Code snippet** — a short excerpt of the suspicious code
+
+<Note>
+A finding does not always mean your site is compromised. Some legitimate plugins use base64 encoding or dynamic function calls for valid purposes. Review each finding in context before taking action.
+</Note>
+
+  </Tab>
+  <Tab title="Vulnerabilities">
+
+## Vulnerabilities tab
+
+The Vulnerabilities tab checks all installed plugins and themes against the [WPScan CVE database](https://wpscan.com). WPScan maintains a curated list of known WordPress security issues with CVSS scores, fix versions, and CVE reference links.
+
+### WPScan API key
+
+Vulnerability scanning requires a free WPScan API key. The free tier allows **25 requests per day**.
+
+<Steps>
+  <Step title="Register for an API key">
+    Create a free account at wpscan.com and copy your API token from your account dashboard.
+  </Step>
+  <Step title="Enter the key in WP Manager Pro">
+    Paste the token into the **WPScan API Key** field on the Vulnerabilities tab and click **Save**. The key is stored securely in `wp_options`. Only the last 4 characters are displayed in the UI after saving.
+  </Step>
+  <Step title="Run the check">
+    Click **Check Now**. The scanner queries the WPScan API for each installed plugin and theme using their slugs and versions.
+  </Step>
+</Steps>
+
+<Note>
+If no API key is configured, clicking **Check Now** returns a `no_api_key` error with a link to the WPScan registration page.
+</Note>
+
+### CVE results
+
+Results are displayed in an expandable list. Each row shows the plugin or theme name, type badge, installed version, and a CVE count badge (red) or a **Clean** badge (green).
+
+Click any row to expand it and see the full CVE detail for each vulnerability:
+
+| Field | Description |
+|-------|-------------|
+| Severity badge | Critical / High / Medium / Low |
+| Title | CVE or vulnerability title |
+| Type | Vulnerability type (e.g. XSS, SQLi, RCE) |
+| CVSS score | Numeric severity score |
+| Fixed in | Version where the issue was patched (if available) |
+| References | Links to CVE entries and advisory pages |
+
+<Warning>
+The free WPScan tier allows 25 API requests per day. Each installed plugin or theme counts as one request. Sites with many plugins may exhaust the daily limit.
+</Warning>
+
+  </Tab>
+  <Tab title="SSL & Core">
+
+## SSL & Core tab
+
+This tab has two side-by-side cards: one for your SSL certificate and one for WordPress, PHP, and database version status.
+
+### SSL certificate
+
+WP Manager Pro connects to your site on port 443 using PHP's `stream_socket_client()` and parses the certificate with `openssl_x509_parse()`. No external services are used.
+
+The certificate card shows:
+
+| Field | Description |
+|-------|-------------|
+| Status | Valid / Expiring soon / Invalid or expired / No SSL |
+| Days remaining | Days until certificate expiry |
+| Host | Hostname checked |
+| Subject | Certificate subject (CN) |
+| Issuer | Certificate authority |
+| Valid From | Certificate issue date |
+| Valid To | Certificate expiry date |
+| SAN | Subject Alternative Names |
+
+Colour indicators:
+- **Green** — valid certificate with more than 14 days remaining
+- **Amber** — valid certificate expiring within 14 days
+- **Red** — no HTTPS, invalid certificate, or connection failed
+
+### Core & PHP versions
+
+The versions card checks three things:
+
+**WordPress version** — fetches the latest version from `https://api.wordpress.org/core/version-check/1.7/` and compares it to the installed version. An amber warning is shown if an update is available.
+
+**PHP version** — checks the running PHP version against a built-in end-of-life date table covering PHP 5.6 through 8.4:
+
+- **Red** — PHP version has passed its EOL date (upgrade immediately)
+- **Amber** — PHP version reaches EOL within 90 days
+- **Green** — PHP version is actively maintained
+
+**Database version** — displays the MySQL or MariaDB version for reference.
+
+<Tip>
+Keep WordPress and PHP on supported versions. Running an end-of-life PHP version means security patches are no longer issued for that branch, leaving your server exposed to known vulnerabilities.
+</Tip>
+
+  </Tab>
+</Tabs>

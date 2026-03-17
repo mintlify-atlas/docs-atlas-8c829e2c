@@ -1,80 +1,103 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Go from plugin activation to your first managed action in 5 minutes"
 ---
 
-## Get started in three steps
-
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide walks you through installing WP Manager Pro and completing your first key actions — checking site health, managing a plugin, enabling maintenance mode, and setting up two-factor authentication.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+You need Administrator access to your WordPress site to install and use WP Manager Pro. All REST API endpoints enforce the `manage_options` capability.
 </Note>
+
+## Get up and running
+
+<Steps>
+  <Step title="Install the plugin">
+    Download `wp-manager-pro-v2.9.2.zip` from the [GitHub Releases](https://github.com/nurkamol/wp-manager-pro/releases) page.
+
+    In your WordPress admin panel, go to **Plugins → Add New → Upload Plugin**. Upload the ZIP file, click **Install Now**, then click **Activate Plugin**.
+
+    <Tip>
+      You can also install manually by unzipping to `wp-content/plugins/` and activating via the Plugins list.
+    </Tip>
+  </Step>
+
+  <Step title="Open WP Manager Pro">
+    After activation, look for **WP Manager** in the WordPress admin sidebar. Click it to open the control panel.
+
+    You can also click the **Open** link in the Plugins list row next to WP Manager Pro.
+  </Step>
+
+  <Step title="Check site health on the Dashboard">
+    The **Dashboard** is the first page you'll see. It shows a real-time snapshot of your site:
+
+    - Active plugin, theme, and user counts
+    - Available updates for WordPress core, plugins, and themes
+    - PHP memory limit, max execution time, and upload limit
+    - Database size, uploads folder size, and disk usage
+    - Recent posts summary
+
+    If you see any update alerts, click through to **Plugin Manager** or **Theme Manager** to apply them.
+  </Step>
+
+  <Step title="Activate or deactivate a plugin">
+    Go to **Plugin Manager** in the sidebar. You'll see a list of all installed plugins with their activation status.
+
+    - Click the toggle switch next to any plugin to activate or deactivate it instantly.
+    - Click the update icon on any plugin with a pending update to apply it in one click.
+    - Use the search bar at the top to filter plugins by name.
+
+    <Tip>
+      Click **Check Updates** (top-right) to force WordPress to re-query WordPress.org for fresh update data without a page reload.
+    </Tip>
+  </Step>
+
+  <Step title="Enable Maintenance Mode">
+    Go to **Maintenance** in the sidebar.
+
+    1. Click the **Content** tab and enter a title and message for your maintenance page.
+    2. Click the **Appearance** tab and choose a gradient preset (e.g., Midnight, Sunset, Forest).
+    3. Click **Enable Maintenance** to go live. All non-admin visitors will see your maintenance page.
+    4. Click **Save Settings** to save your design without changing the active state.
+
+    <Warning>
+      While maintenance mode is active, all regular visitors are blocked from accessing the site. Only logged-in administrators see the normal site.
+    </Warning>
+  </Step>
+
+  <Step title="Set up Two-Factor Authentication">
+    Go to **Security** in the sidebar, then click the **Two-Factor** tab.
+
+    1. Click **Set Up Two-Factor Auth** to generate your TOTP secret.
+    2. Scan the QR code with Google Authenticator, Authy, or any TOTP app.
+    3. Enter the 6-digit code from your authenticator app and click **Verify & Activate**.
+    4. Save the 8 one-time backup codes shown — they are only displayed once.
+
+    <Warning>
+      Store your backup codes in a safe place. They are the only way to access your account if you lose access to your authenticator app.
+    </Warning>
+  </Step>
+</Steps>
+
+## What to explore next
+
+<CardGroup cols={2}>
+  <Card title="Plugin Manager" icon="plug" href="/features/plugin-manager">
+    Install plugins from WordPress.org, upload ZIPs, and manage version history.
+  </Card>
+  <Card title="File Manager" icon="folder-open" href="/features/file-manager">
+    Browse and edit your WordPress filesystem with Monaco Editor.
+  </Card>
+  <Card title="Database Manager" icon="database" href="/features/database-manager">
+    Browse tables, run safe SQL queries, and perform search & replace.
+  </Card>
+  <Card title="Security Suite" icon="shield" href="/security/overview">
+    Admin URL protection, login limiter, 2FA, and malware scanning.
+  </Card>
+  <Card title="Agency Tools" icon="building" href="/agency/agency-tools">
+    White-label the login page, intercept emails, and generate client reports.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Use the REST API directly for automation and integrations.
+  </Card>
+</CardGroup>

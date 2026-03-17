@@ -1,0 +1,62 @@
+---
+title: "Audit Log"
+description: "Track plugin, theme, user, and post events automatically"
+---
+
+Audit Log automatically records admin actions and WordPress lifecycle events so you can see who did what and when. No configuration is needed — recording starts the moment the plugin is activated.
+
+To open Audit Log, click **WP Manager → Audit Log** in the WordPress admin sidebar.
+
+## What gets logged
+
+The following event types are captured automatically:
+
+| Category | Events |
+|----------|---------|
+| **Plugins** | `plugin.activated`, `plugin.deactivated`, `plugin.deleted` |
+| **Themes** | `theme.activated` |
+| **Users** | `user.login`, `user.logout`, `user.login_failed`, `user.registered` |
+| **Content** | `content.published` |
+| **Backups** | `backup.created`, `backup.deleted` |
+
+## Reading the log
+
+Each row in the log table shows:
+
+| Column | Description |
+|--------|-------------|
+| **Date** | Timestamp of the event |
+| **User** | The WordPress username that triggered the event |
+| **Action** | A colour-coded badge showing the event type |
+| **Object** | The name of the affected item (plugin name, username, post title, etc.) and its type in parentheses |
+| **IP Address** | The IP address of the user who triggered the event |
+
+The log is paginated at 50 entries per page.
+
+## Filtering by action type
+
+Use the **Filter by action** dropdown to narrow the log to a specific event type. The dropdown is populated dynamically from the action types present in your log — only types that have been recorded appear as options.
+
+Select **All actions** to clear the filter and show every event.
+
+## Exporting to CSV
+
+Click **Export CSV** to download the current log (with any active filter applied) as a `.csv` file. The export includes all columns: date, user, action, object name, object type, and IP address.
+
+## Clearing the log
+
+Click **Clear Log** to permanently delete all audit log entries. A confirmation dialog appears before the log is cleared.
+
+<Warning>
+Clearing the audit log is irreversible. Export the log to CSV first if you need to retain a record.
+</Warning>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/audit` | List audit log entries (paginated, filterable) |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/audit/clear` | Clear the audit log |
+| `POST` | `/wp-json/wp-manager-pro/v1/audit/export` | Generate a CSV export |
+| `GET` | `/wp-json/wp-manager-pro/v1/audit/download` | Download the CSV export file |
+| `GET` | `/wp-json/wp-manager-pro/v1/audit/action-types` | Get all distinct action types for the filter dropdown |

@@ -1,0 +1,86 @@
+---
+title: "Notes"
+description: "Color-coded, persistent note-taking stored in your WordPress database"
+---
+
+Notes is a simple, persistent notepad built into WP Manager Pro. Notes are stored in a custom `wp_wmp_notes` database table so they survive plugin updates and are never lost between sessions.
+
+To open Notes, click **WP Manager → Notes** in the WordPress admin sidebar.
+
+## The notes grid
+
+Notes are displayed in a responsive grid — one column on small screens, up to four columns on wide screens. Each note card shows:
+
+- The **title** in bold
+- The **content** (up to six lines; longer content is clipped)
+- The **last updated** timestamp at the bottom
+- **Edit** and **delete** action buttons in the top-right corner
+
+The grid is ordered by last updated, with the most recently changed note appearing first.
+
+## Creating a note
+
+<Steps>
+  <Step title="Open the form">
+    Click **New Note** in the top-right corner of the page.
+  </Step>
+  <Step title="Enter a title">
+    Type a title for your note. The title is required.
+  </Step>
+  <Step title="Write the content">
+    Type your note content in the **Content** field. This field is optional — you can create a title-only note.
+  </Step>
+  <Step title="Choose a colour">
+    Click one of the six colour swatches to set the card's background colour. The selected swatch scales up to confirm the selection.
+  </Step>
+  <Step title="Save">
+    Click **Create Note**. The note appears immediately in the grid.
+  </Step>
+</Steps>
+
+## Colour options
+
+| Colour | Appearance |
+|--------|------------|
+| **Default** | White card with a light grey border |
+| **Blue** | Light blue background with a blue border |
+| **Green** | Light green background with a green border |
+| **Yellow** | Light yellow background with a yellow border |
+| **Red** | Light red background with a red border |
+| **Purple** | Light purple background with a purple border |
+
+<Tip>
+Use colours to categorise notes by purpose. For example: blue for client reminders, yellow for to-do items, red for urgent issues.
+</Tip>
+
+## Editing a note
+
+Click the **pencil** icon on any note card to open the edit dialog. All fields — title, content, and colour — can be changed. Click **Update Note** to save.
+
+## Deleting a note
+
+Click the **trash** icon on any note card. A confirmation dialog appears asking you to confirm the deletion.
+
+<Warning>
+Deleting a note is permanent. There is no undo.
+</Warning>
+
+## Storage
+
+Notes are stored in a custom `wp_wmp_notes` database table created during plugin activation. The table uses your site's configured table prefix. Notes persist across:
+
+- Plugin updates
+- WordPress updates
+- Theme switches
+- Server migrations (as long as the database is preserved)
+
+Notes are **not** deleted when the plugin is deactivated. They are only removed if the plugin is fully uninstalled (deleted) from WordPress.
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/notes` | List all notes |
+| `POST` | `/wp-json/wp-manager-pro/v1/notes` | Create a note |
+| `PUT` | `/wp-json/wp-manager-pro/v1/notes/{id}` | Update a note |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/notes/{id}` | Delete a note |

@@ -1,0 +1,59 @@
+---
+title: "Reset Tools"
+description: "Safely reset site content with a double confirmation workflow"
+---
+
+Reset Tools lets you delete WordPress content in bulk. It is designed for cleaning up development or staging environments after testing, and includes live content counts and a two-step confirmation to prevent accidental data loss.
+
+To open Reset Tools, click **WP Manager → Reset Tools** in the WordPress admin sidebar.
+
+<Warning>
+All deletions are permanent and cannot be undone. There is no recovery path once the reset has executed. Only use Reset Tools on development or staging sites.
+</Warning>
+
+<Note>
+Admin accounts, plugin settings, WordPress options, site configuration, and the WP Manager Pro database tables are never affected by Reset Tools. Only the selected content types are deleted.
+</Note>
+
+## Content types
+
+Reset Tools shows a live count of each deletable content type, fetched from the server when the page loads:
+
+| Content type | What is deleted |
+|---|---|
+| **Posts** | All posts and their associated post meta. |
+| **Pages** | All pages and their associated post meta. |
+| **Comments** | All comments and comment meta. |
+| **Media** | All attachment posts, post meta, and the physical files from disk. |
+| **Non-Admin Users** | All users except those with the Administrator role. |
+
+Each card displays the current count so you know exactly how many items will be removed before proceeding.
+
+## Executing a reset
+
+<Steps>
+  <Step title="Select content types">
+    Check the checkbox on each content type card you want to delete. Selected cards are highlighted in red. You can select any combination of content types.
+  </Step>
+  <Step title="Acknowledge the confirmation checkbox">
+    Check **I understand this is irreversible** at the bottom of the content selection area. The **Execute Reset** button remains disabled until this checkbox is checked and at least one content type is selected.
+  </Step>
+  <Step title="Click Execute Reset">
+    Click the **Execute Reset** button. A confirmation dialog opens listing every selected content type and the exact item count that will be deleted.
+  </Step>
+  <Step title="Confirm in the dialog">
+    Review the list in the confirmation dialog. Click **Yes, Delete Everything** to proceed, or **Cancel** to go back without making any changes.
+  </Step>
+  <Step title="Wait for completion">
+    WP Manager Pro deletes the content using WordPress core functions only (`wp_delete_post()`, `wp_delete_comment()`, `wp_delete_attachment()`, `wp_delete_user()`). A success toast shows a summary of how many items were deleted per type.
+  </Step>
+</Steps>
+
+## How deletion works
+
+Reset Tools uses WordPress core deletion functions exclusively. This means:
+
+- Post meta, term relationships, and comment data associated with deleted posts are removed along with the post.
+- Attachment files and all generated thumbnail sizes are removed from disk when Media is selected.
+- Non-admin users are deleted without post reassignment — their posts are deleted along with them if Posts is also selected, or left orphaned if Posts is not selected.
+- The REST API endpoint requires an explicit `confirm: true` flag — the reset cannot be triggered by accident or by an unauthenticated request.

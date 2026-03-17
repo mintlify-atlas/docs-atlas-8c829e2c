@@ -1,0 +1,134 @@
+---
+title: "Media Manager"
+description: "Clean up your media library — find orphans, duplicates, and unused files"
+---
+
+Media Manager scans your WordPress media library for problems that waste disk space and database rows: missing files, unreferenced attachments, duplicate images, and oversized JPEGs and PNGs. Each category has its own tab with bulk actions.
+
+To open Media Manager, click **WP Manager → Media Manager** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Overview">
+
+## Overview tab
+
+The Overview tab shows five summary stats for your media library:
+
+| Stat | Description |
+|------|-------------|
+| **Total Attachments** | The total number of attachment posts in the WordPress database. |
+| **Uploads Size** | The total disk usage of the `wp-content/uploads` directory. |
+| **Orphaned** | Attachments in the database whose physical file is missing from disk. |
+| **Unused** | Attachments not set as featured images and not referenced in any published post content. |
+| **Duplicate Groups** | Groups of files that share an identical MD5 hash. |
+
+Click **Refresh** to re-fetch the stats from the server.
+
+### What each section does
+
+| Section | What it finds |
+|---------|---------------|
+| **Orphaned** | Database records with no corresponding file on disk. Safe to delete — the file is already gone. |
+| **Unused** | Attachments not used as featured images and whose filename does not appear in any published post content. Review carefully before deleting — some files may be used in page builders or custom fields. |
+| **Duplicates** | Files with the same content (same MD5 hash). The oldest attachment is kept as the original; duplicates can be deleted to reclaim disk space. |
+| **Compress** | Re-compresses JPEG and PNG files in-place using WordPress's built-in image editor to reduce file size without converting to a new format. |
+
+  </Tab>
+  <Tab title="Orphaned">
+
+## Orphaned tab
+
+Lists all attachment records in the WordPress database whose physical file no longer exists on disk.
+
+Each row shows the attachment title, URL, MIME type, upload date, and database ID.
+
+### Bulk delete orphaned attachments
+
+<Steps>
+  <Step title="Scan">
+    Click **Scan** to load the orphaned attachment list. The total count is shown next to the tab header.
+  </Step>
+  <Step title="Select attachments">
+    Check individual rows, or use the header checkbox to select all. The delete button shows how many items are selected.
+  </Step>
+  <Step title="Delete">
+    Click **Delete N selected**. WP Manager Pro calls `wp_delete_attachment()` for each selected ID. This removes the database record and any associated metadata. Because the physical file is already missing, no files are deleted from disk.
+  </Step>
+</Steps>
+
+  </Tab>
+  <Tab title="Unused">
+
+## Unused tab
+
+Lists attachments that are not set as a featured image on any post and whose filename does not appear in the content of any published post.
+
+Each row shows a thumbnail preview (where available), title, file size, MIME type, upload date, and database ID. When multiple items are selected, the total size that would be freed is displayed.
+
+<Warning>
+The unused check scans post content for filename references. Attachments used exclusively in page builder shortcodes, custom fields, or option values may be incorrectly flagged as unused. Review the list carefully before deleting.
+</Warning>
+
+### Bulk delete unused attachments
+
+<Steps>
+  <Step title="Scan">
+    Click **Scan** to load the unused attachment list.
+  </Step>
+  <Step title="Select attachments">
+    Check the rows you want to remove. The selection summary shows how many megabytes will be freed.
+  </Step>
+  <Step title="Delete">
+    Click **Delete N selected**. Each attachment is deleted with `wp_delete_attachment()`, which removes the database record, post meta, and the physical file and all its generated thumbnail sizes from disk.
+  </Step>
+</Steps>
+
+  </Tab>
+  <Tab title="Duplicates">
+
+## Duplicates tab
+
+Groups attachments by MD5 file hash. Files with identical content are shown together in a card, with the wasted disk space for that group displayed as a badge.
+
+The scan summary shows the total number of duplicate groups, total wasted space, and how many attachments were scanned.
+
+### How duplicates are handled
+
+- The attachment with the **lowest ID** (uploaded first) is marked **Keep (original)**.
+- All other attachments in the group are duplicates and can be deleted individually.
+
+### Deleting a duplicate
+
+Click the trash button on any duplicate row to delete that attachment. Deletion calls `wp_delete_attachment()` and removes the database record and the physical file from disk.
+
+<Note>
+Duplicate detection scans up to 300 attachments at a time. Click **Scan** to re-run the scan after making deletions.
+</Note>
+
+  </Tab>
+  <Tab title="Compress">
+
+## Compress tab
+
+Lists JPEG and PNG attachments and lets you re-compress them in-place to reduce file size.
+
+### Setting compression quality
+
+Use the **Quality** slider to choose the compression level (40–100, default 82):
+
+- Lower values produce smaller files but introduce more visible compression artefacts.
+- Higher values preserve more detail but result in larger files.
+- The recommended range for JPEG is 75–85.
+- PNG files are always re-saved losslessly — the quality slider does not reduce PNG quality.
+
+### Compressing an image
+
+Click **Compress** on any row. WP Manager Pro calls `wp_get_image_editor()` to re-compress the file in-place. The result column updates to show:
+
+- The new file size after compression
+- The bytes saved and percentage reduction
+
+If the re-compressed file is not smaller than the original, `No reduction` is shown and the original file is left unchanged.
+
+  </Tab>
+</Tabs>

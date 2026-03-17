@@ -1,0 +1,160 @@
+---
+title: "Backup API"
+description: "REST endpoints for creating, downloading, and scheduling WordPress database backups"
+---
+
+The backup endpoints manage SQL dump backups stored in `wp-content/wmp-backups/`. Backups can be created on demand, downloaded, and deleted. Scheduled backup configuration controls automatic daily, weekly, or monthly backups via WP-Cron.
+
+## GET /backup
+
+Returns a list of all available backup files.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/backup \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of backup file objects:
+
+<ResponseField name="[].filename" type="string">Backup file name (e.g. `"backup-2025-03-14-093000.sql"`).</ResponseField>
+<ResponseField name="[].size" type="string">Human-readable file size (e.g. `"4.2 MB"`).</ResponseField>
+<ResponseField name="[].size_bytes" type="number">File size in bytes.</ResponseField>
+<ResponseField name="[].created" type="string">Creation timestamp.</ResponseField>
+
+---
+
+## POST /backup/create
+
+Creates a full SQL dump of the WordPress database and saves it to the protected backups directory.
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/backup/create \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Request body
+
+<ParamField body="tables" type="string[]">
+  Specific table names to include in the backup. If omitted, all tables are included.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="filename" type="string">Name of the created backup file.</ResponseField>
+<ResponseField name="size" type="string">Human-readable size of the created file.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## POST /backup/download
+
+Prepares a backup file for download and returns a signed URL. Call `GET /backup/serve` with the returned filename to stream the file.
+
+### Request body
+
+<ParamField body="filename" type="string" required>
+  Filename of the backup to prepare for download.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="filename" type="string">The filename echoed back.</ResponseField>
+
+---
+
+## GET /backup/serve
+
+Streams a backup file to the browser as a download. This endpoint outputs the file directly with appropriate `Content-Disposition` headers.
+
+```bash
+curl "https://yoursite.com/wp-json/wp-manager-pro/v1/backup/serve?filename=backup-2025-03-14-093000.sql" \
+  -H "X-WP-Nonce: <nonce>" \
+  -o backup.sql
+```
+
+### Query parameters
+
+<ParamField query="filename" type="string" required>
+  Filename of the backup to stream. Must exist in the backups directory.
+</ParamField>
+
+---
+
+## DELETE /backup/delete
+
+Permanently deletes a backup file from the server.
+
+<Warning>
+  Deleted backup files cannot be recovered.
+</Warning>
+
+### Request body
+
+<ParamField body="filename" type="string" required>
+  Filename of the backup to delete.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true }
+```
+
+---
+
+## GET /backup/schedule
+
+Returns the current scheduled backup configuration.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/backup/schedule \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="enabled" type="boolean">
+  Whether scheduled backups are active.
+</ResponseField>
+
+<ResponseField name="frequency" type="string">
+  Backup frequency: `"daily"`, `"weekly"`, or `"monthly"`.
+</ResponseField>
+
+<ResponseField name="retain" type="number">
+  Maximum number of backup files to keep. Oldest files are pruned automatically after each run.
+</ResponseField>
+
+<ResponseField name="next_run" type="number | null">
+  Unix timestamp of the next scheduled backup, or `null` if not scheduled.
+</ResponseField>
+
+---
+
+## POST /backup/schedule
+
+Saves the scheduled backup configuration.
+
+### Request body
+
+<ParamField body="enabled" type="boolean">
+  Enable or disable scheduled backups.
+</ParamField>
+
+<ParamField body="frequency" type="string">
+  How often to create a backup. One of `"daily"`, `"weekly"`, or `"monthly"`.
+</ParamField>
+
+<ParamField body="retain" type="number">
+  Number of backups to retain. When the limit is reached, the oldest backup is deleted.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Backup schedule saved." }
+```

@@ -1,0 +1,167 @@
+---
+title: "Dashboard API"
+description: "GET /dashboard — site stats and health"
+---
+
+The dashboard endpoint returns a comprehensive snapshot of the WordPress site, including counts, pending updates, PHP and system info, and recent posts.
+
+## GET /dashboard
+
+Returns site stats and health information.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/dashboard \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="site" type="object">
+  Core WordPress and server information.
+  <Expandable title="properties">
+    <ResponseField name="site.name" type="string">
+      The site name from `get_bloginfo('name')`.
+    </ResponseField>
+    <ResponseField name="site.url" type="string">
+      The site URL.
+    </ResponseField>
+    <ResponseField name="site.wp" type="string">
+      WordPress version (e.g. `"6.5.3"`).
+    </ResponseField>
+    <ResponseField name="site.php" type="string">
+      PHP version (e.g. `"8.2.10"`).
+    </ResponseField>
+    <ResponseField name="site.debug" type="boolean">
+      Whether `WP_DEBUG` is enabled.
+    </ResponseField>
+    <ResponseField name="site.maintenance" type="boolean">
+      Whether the `.maintenance` file exists (maintenance mode active).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="counts" type="object">
+  Content and entity counts.
+  <Expandable title="properties">
+    <ResponseField name="counts.posts" type="number">
+      Number of published posts.
+    </ResponseField>
+    <ResponseField name="counts.pages" type="number">
+      Number of published pages.
+    </ResponseField>
+    <ResponseField name="counts.plugins" type="number">
+      Total number of installed plugins.
+    </ResponseField>
+    <ResponseField name="counts.active_plugins" type="number">
+      Number of currently active plugins.
+    </ResponseField>
+    <ResponseField name="counts.themes" type="number">
+      Total number of installed themes.
+    </ResponseField>
+    <ResponseField name="counts.users" type="number">
+      Total registered user count.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="updates" type="object">
+  Pending update counts.
+  <Expandable title="properties">
+    <ResponseField name="updates.plugins" type="number">
+      Number of plugins with available updates.
+    </ResponseField>
+    <ResponseField name="updates.themes" type="number">
+      Number of themes with available updates.
+    </ResponseField>
+    <ResponseField name="updates.core" type="string | false">
+      Latest WordPress core version if an update is available, otherwise `false`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="system" type="object">
+  PHP and server resource info.
+  <Expandable title="properties">
+    <ResponseField name="system.memory_limit" type="string">
+      PHP memory limit (e.g. `"256M"`).
+    </ResponseField>
+    <ResponseField name="system.upload_max" type="string">
+      PHP `upload_max_filesize` value.
+    </ResponseField>
+    <ResponseField name="system.max_exec_time" type="string">
+      PHP `max_execution_time` in seconds.
+    </ResponseField>
+    <ResponseField name="system.db_size" type="number">
+      Total database size in megabytes, rounded to 2 decimal places.
+    </ResponseField>
+    <ResponseField name="system.uploads_size" type="string">
+      Uploads directory size as a human-readable string (e.g. `"128.45 MB"`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="active_theme" type="string">
+  Name of the currently active theme.
+</ResponseField>
+
+<ResponseField name="recent_posts" type="object[]">
+  The 5 most recently published posts.
+  <Expandable title="properties">
+    <ResponseField name="recent_posts[].id" type="number">
+      Post ID.
+    </ResponseField>
+    <ResponseField name="recent_posts[].title" type="string">
+      Post title.
+    </ResponseField>
+    <ResponseField name="recent_posts[].date" type="string">
+      Post date in `Y-m-d H:i:s` format.
+    </ResponseField>
+    <ResponseField name="recent_posts[].url" type="string">
+      Permalink URL.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example response
+
+```json
+{
+  "site": {
+    "name": "My WordPress Site",
+    "url": "https://yoursite.com",
+    "wp": "6.5.3",
+    "php": "8.2.10",
+    "debug": false,
+    "maintenance": false
+  },
+  "counts": {
+    "posts": 42,
+    "pages": 8,
+    "plugins": 15,
+    "active_plugins": 12,
+    "themes": 4,
+    "users": 3
+  },
+  "updates": {
+    "plugins": 2,
+    "themes": 0,
+    "core": false
+  },
+  "system": {
+    "memory_limit": "256M",
+    "upload_max": "64M",
+    "max_exec_time": "300",
+    "db_size": 4.82,
+    "uploads_size": "128.45 MB"
+  },
+  "active_theme": "Twenty Twenty-Four",
+  "recent_posts": [
+    {
+      "id": 101,
+      "title": "Hello World",
+      "date": "2025-03-14 10:00:00",
+      "url": "https://yoursite.com/hello-world/"
+    }
+  ]
+}
+```

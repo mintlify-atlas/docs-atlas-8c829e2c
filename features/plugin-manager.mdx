@@ -1,0 +1,132 @@
+---
+title: "Plugin Manager"
+description: "Install, manage, and update WordPress plugins from one interface"
+---
+
+Plugin Manager lists every installed plugin with its activation status, version, author, and any pending updates. You can activate, deactivate, delete, export, update, install from WordPress.org, or roll back to any previous version — all without leaving WP Manager Pro.
+
+To open Plugin Manager, click **WP Manager → Plugin Manager** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Managing plugins">
+
+## Installed plugins list
+
+The list is split into two sections: **Active** and **Inactive**. Use the search box to filter by plugin name or author.
+
+Each plugin row shows:
+- Plugin name, version, and author
+- An **Active** badge (green) if the plugin is running
+- An **Update** badge (amber) if a newer version is available on WordPress.org
+
+### Activate and deactivate
+
+Click **Activate** or **Deactivate** on any plugin row to toggle its state. Feedback appears as a toast notification.
+
+### Delete a plugin
+
+Click the trash icon on a plugin row. A confirmation dialog appears before deletion. Active plugins are automatically deactivated before they are deleted.
+
+<Warning>
+Deletion is permanent and cannot be undone. The plugin files are removed from disk.
+</Warning>
+
+### Export a plugin as ZIP
+
+Click the download icon on a plugin row to export the plugin as a `.zip` archive. The browser downloads the file immediately. Use this to back up a plugin or transfer it to another site.
+
+### One-click update
+
+When an **Update** badge is visible, an amber **Update** button appears on the plugin row. Click it to update the plugin to the latest version from WordPress.org in place.
+
+### Bulk operations
+
+Check the box on the left of any plugin row to select it. When one or more plugins are selected, a bulk toolbar appears with the following actions:
+
+| Action | Applies to |
+|--------|------------|
+| Activate | Selected inactive plugins |
+| Deactivate | Selected active plugins |
+| Update | Selected plugins with pending updates |
+| Delete | All selected plugins |
+
+Bulk delete shows a confirmation dialog listing all plugins that will be removed.
+
+### Check for updates
+
+Click the **Check Updates** button in the top-right corner of the page to force WordPress to re-query WordPress.org for fresh update data. The list refreshes immediately without a page reload.
+
+  </Tab>
+  <Tab title="Installing plugins">
+
+## Install from WordPress.org
+
+<Steps>
+  <Step title="Open the Search & Install tab">
+    Click the **Search & Install** tab at the top of Plugin Manager.
+  </Step>
+  <Step title="Search for a plugin">
+    Type the plugin name in the search box and press **Enter** or click **Search**. Results are fetched directly from the WordPress.org plugin API and display up to 12 matches with name, author, star rating, and download count.
+  </Step>
+  <Step title="Install or update">
+    Each result card shows one of three buttons:
+    - **Install** — plugin is not yet installed
+    - **Update** (amber) — plugin is installed but a newer version is available
+    - **Installed ✓** (disabled) — plugin is already on the latest version
+
+    Click **Install** to download and install the plugin from WordPress.org.
+  </Step>
+</Steps>
+
+## Upload a ZIP
+
+Use the **Upload ZIP** tab to install a plugin from a local `.zip` file.
+
+<Steps>
+  <Step title="Open the Upload ZIP tab">
+    Click the **Upload ZIP** tab.
+  </Step>
+  <Step title="Add files to the queue">
+    Drag one or more `.zip` files onto the drop zone, or click **Add Files** to open a file picker. Multiple ZIP files are supported and queued for sequential installation.
+  </Step>
+  <Step title="(Optional) enable overwrite">
+    Check **Overwrite if exists** to replace an already-installed plugin's files. Leave it unchecked to skip plugins that are already present.
+  </Step>
+  <Step title="Install">
+    Click **Install N Plugin(s)**. Each file in the queue is installed in order. Status icons show `Pending → Installing... → Done` (or `Error`) for each file.
+  </Step>
+</Steps>
+
+<Note>
+Only `.zip` files are accepted. Non-ZIP files are rejected with an error.
+</Note>
+
+  </Tab>
+  <Tab title="Version history">
+
+## Version History dialog
+
+The Version History dialog lets you install any version of a plugin that has been published on WordPress.org — including older versions. This is useful for rolling back a plugin that broke after an update.
+
+<Steps>
+  <Step title="Open the dialog">
+    Click the clock/history icon (⏱) on any plugin row in the Installed tab.
+  </Step>
+  <Step title="Browse available versions">
+    The dialog loads all available versions from WordPress.org, sorted newest first. The currently installed version is highlighted with a **Current** badge.
+  </Step>
+  <Step title="Install a version">
+    Click **Install** next to the version you want. The plugin is reinstalled at that version. The plugin remains active after the switch if it was active before.
+  </Step>
+</Steps>
+
+<Warning>
+Installing an older version downgrades the plugin. If the older version has known security vulnerabilities, update again as soon as possible.
+</Warning>
+
+<Note>
+Version history is only available for plugins hosted on WordPress.org. Premium or custom plugins will show "No version history available."
+</Note>
+
+  </Tab>
+</Tabs>

@@ -1,0 +1,70 @@
+---
+title: "Hardening"
+description: "Harden WordPress against common attack vectors"
+---
+
+The **Hardening** tab of the Security Suite provides three controls that reduce your site's attack surface: disabling XML-RPC, hiding the WordPress version number, and maintaining a blocklist of banned IPs and CIDR ranges.
+
+To open this tab, click **WP Manager → Security** and select the **Hardening** tab.
+
+## WordPress hardening toggles
+
+The two hardening toggles are saved together with a single **Save Hardening Settings** button. Their state is stored in `wp_options` and enforced on every request.
+
+### Disable XML-RPC
+
+XML-RPC (`xmlrpc.php`) is a legacy remote-publishing interface that is frequently targeted for brute-force credential stuffing and DDoS amplification attacks. Enabling this toggle applies a `__return_false` callback to the `xmlrpc_enabled` filter, which causes WordPress to refuse all XML-RPC requests with a `403` response.
+
+<Note>
+Disabling XML-RPC will break any tools that rely on it, such as older versions of the Jetpack plugin, the official WordPress mobile app (XML-RPC mode), and some backup plugins. Modern replacements use the REST API instead.
+</Note>
+
+### Hide WordPress version
+
+Advertising your WordPress version makes it easier for attackers to target known vulnerabilities in that release. Enabling this toggle:
+
+- Removes the `<meta name="generator" content="WordPress X.Y.Z" />` tag from the `<head>` of every page.
+- Strips the `?ver=X.Y.Z` query string appended to scripts and stylesheets enqueued by WordPress core.
+
+Version information is still available to administrators inside WP Manager Pro. Only public-facing output is affected.
+
+## IP blocklist
+
+The IP blocklist lets you permanently deny access to specific IP addresses or entire CIDR-notated subnets. Blocked addresses are checked on the `init` hook before any page output is sent, so blocked visitors receive a `403 Access denied` response immediately.
+
+Matching uses an exact comparison for plain IPs and a bitwise subnet mask comparison for CIDR ranges, so both IPv4 addresses and ranges are supported.
+
+### Adding an IP or CIDR range
+
+<Steps>
+  <Step title="Enter the IP or range">
+    Type a plain IPv4 address (e.g. `203.0.113.5`) or a CIDR range (e.g. `10.0.0.0/24`) into the IP field. The value is validated with `filter_var(FILTER_VALIDATE_IP)` or a CIDR pattern before it is accepted.
+  </Step>
+  <Step title="Add an optional note">
+    Enter a short description in the **Note** field — for example, `Spam bot` or `Known scanner`. This is stored alongside the entry for your reference.
+  </Step>
+  <Step title="Block the IP">
+    Click **Block**. The entry is added to the `wmp_ip_blocklist` option array with the IP, note, and a Unix timestamp of when it was added.
+  </Step>
+</Steps>
+
+<Warning>
+Duplicate IPs are rejected — the API returns a `409 Conflict` if you try to add an IP that is already in the list.
+</Warning>
+
+### Removing a blocked IP
+
+Click **Remove** on any row in the blocklist table. The entry is deleted from the `wmp_ip_blocklist` option array. The change takes effect on the next request from that IP.
+
+### Blocklist table columns
+
+| Column | Description |
+|--------|-------------|
+| IP / CIDR | The blocked address or subnet |
+| Note | Your optional description |
+| Added | Date the entry was created |
+| (action) | **Remove** button to delete the entry |
+
+<Tip>
+Use CIDR notation to block entire subnets in a single entry. For example, `192.0.2.0/24` blocks all 256 addresses in that range without requiring 256 individual entries.
+</Tip>

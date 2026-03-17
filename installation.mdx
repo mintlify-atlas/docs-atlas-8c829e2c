@@ -1,0 +1,94 @@
+---
+title: "Installation"
+description: "Install WP Manager Pro on your WordPress site"
+---
+
+WP Manager Pro ships as a standard WordPress plugin. You can install it from a ZIP file, manually via the command line, or build it yourself from source.
+
+<Note>
+  Only WordPress users with the `manage_options` capability (Administrators) can access WP Manager Pro. Every REST API endpoint enforces this — lower-privileged users receive a `403 Forbidden` response.
+</Note>
+
+## Install from ZIP
+
+<Steps>
+  <Step title="Download the plugin ZIP">
+    Download `wp-manager-pro-v2.9.2.zip` from the [Releases](https://github.com/nurkamol/wp-manager-pro/releases) page on GitHub.
+  </Step>
+  <Step title="Upload via WP Admin">
+    In your WordPress admin, go to **Plugins → Add New → Upload Plugin**. Choose the ZIP file you downloaded and click **Install Now**.
+  </Step>
+  <Step title="Activate the plugin">
+    After the upload completes, click **Activate Plugin**.
+  </Step>
+  <Step title="Open WP Manager Pro">
+    Click **WP Manager** in the WordPress admin sidebar, or click the **Open** link in the Plugins list row next to WP Manager Pro.
+  </Step>
+</Steps>
+
+## Install manually
+
+If you prefer to deploy via the command line, unzip the archive directly into your plugins directory:
+
+```bash
+unzip wp-manager-pro-v2.9.2.zip -d /path/to/wp-content/plugins/
+```
+
+Then activate the plugin from **WP Admin → Plugins**.
+
+## Build from source
+
+If you want to modify the frontend or contribute to the plugin, you can build from the GitHub repository.
+
+### Prerequisites
+
+| Requirement | Minimum |
+|---|---|
+| Node.js | 18 |
+| npm | 9 |
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/nurkamol/wp-manager-pro.git
+    cd wp-manager-pro
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Build for production">
+    ```bash
+    npm run build
+    ```
+
+    This compiles the React app and outputs two files:
+
+    | File | Size | Gzipped |
+    |---|---|---|
+    | `assets/build/index.js` | ~793 kB | ~220 kB |
+    | `assets/build/style.css` | ~52 kB | ~9 kB |
+  </Step>
+  <Step title="Package a plugin ZIP">
+    From the parent directory of the cloned repo, run:
+
+    ```bash
+    cd ..
+    zip -r wp-manager-pro-v2.9.2.zip \
+      wp-manager-pro/wp-manager-pro.php \
+      wp-manager-pro/includes/ \
+      wp-manager-pro/assets/build/
+    ```
+
+    The resulting ZIP contains only the files WordPress needs — the React source and `node_modules` are excluded.
+  </Step>
+  <Step title="Install the built ZIP">
+    Upload the ZIP using the WP Admin method described above, or unzip it directly into your plugins directory.
+  </Step>
+</Steps>
+
+<Tip>
+  Run `npm run dev` during development to start Vite's development server with hot module replacement.
+</Tip>

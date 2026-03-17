@@ -1,0 +1,95 @@
+---
+title: "Email & SMTP"
+description: "Configure SMTP and monitor outgoing email"
+---
+
+Email & SMTP lets you override WordPress's default email sending with a custom SMTP server and gives you a log of every outgoing email your site sends.
+
+To open Email & SMTP, click **WP Manager → Email & SMTP** in the WordPress admin sidebar.
+
+The page has two tabs: **SMTP Settings** and **Email Log**.
+
+<Tabs>
+  <Tab title="SMTP settings">
+
+## SMTP settings tab
+
+### Enabling custom SMTP
+
+Toggle **Enable Custom SMTP** to override WordPress's default PHP `mail()` sending. All `wp_mail()` calls are rerouted through your SMTP server once this is on.
+
+### Configuration fields
+
+| Field | Description |
+|-------|-------------|
+| **SMTP Host** | Your mail server hostname. Example: `smtp.gmail.com` |
+| **Port** | The port your server listens on. Typically `587` for TLS, `465` for SSL, or `25` for no encryption |
+| **Encryption** | `TLS` (recommended, port 587), `SSL` (port 465), or `None` (port 25) |
+| **Username** | Your SMTP login, usually your full email address |
+| **Password** | Your SMTP password or app-specific password |
+| **From Email** | The address that appears in the `From:` header. Example: `noreply@yourdomain.com` |
+| **From Name** | The sender name shown to recipients. Example: `My Website` |
+
+<Tip>
+For Gmail, use an **App Password** rather than your account password. Go to your Google Account → Security → App Passwords and create one for WP Manager Pro.
+</Tip>
+
+### Saving settings
+
+Click **Save Settings** to store your SMTP configuration. Settings fields are disabled when the SMTP toggle is off.
+
+### Sending a test email
+
+<Steps>
+  <Step title="Enable SMTP">
+    Make sure the **Enable Custom SMTP** toggle is on and your settings are saved.
+  </Step>
+  <Step title="Open the test dialog">
+    Click **Send Test Email**. A dialog opens asking for a recipient address.
+  </Step>
+  <Step title="Enter a recipient and send">
+    Type an email address and click **Send Test**. WP Manager Pro fires a test `wp_mail()` call through your configured SMTP server.
+  </Step>
+  <Step title="Check the result">
+    A success toast confirms the email was sent. Switch to the **Email Log** tab to see the delivery status.
+  </Step>
+</Steps>
+
+  </Tab>
+  <Tab title="Email log">
+
+## Email log tab
+
+The Email Log records every outgoing `wp_mail()` call — whether sent via your custom SMTP configuration or WordPress's default mail handler.
+
+### Log columns
+
+| Column | Description |
+|--------|-------------|
+| **Date** | Timestamp when the email was sent |
+| **To** | The recipient email address |
+| **Subject** | The email subject line |
+| **Status** | `Sent` (green) or `Failed` (red). Hover over a Failed badge to see the error message |
+
+### Clearing the log
+
+Click **Clear Log** to permanently delete all email log entries. A confirmation dialog appears before anything is deleted.
+
+<Warning>
+Clearing the log is permanent and cannot be undone. Export or screenshot entries you need before clearing.
+</Warning>
+
+The log is paginated at 50 entries per page.
+
+  </Tab>
+</Tabs>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/email/settings` | Get SMTP settings |
+| `POST` | `/wp-json/wp-manager-pro/v1/email/settings` | Save SMTP settings |
+| `POST` | `/wp-json/wp-manager-pro/v1/email/test` | Send a test email |
+| `GET` | `/wp-json/wp-manager-pro/v1/email/log` | Get the email log (paginated) |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/email/log/clear` | Clear the email log |

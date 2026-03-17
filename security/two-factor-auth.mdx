@@ -1,0 +1,64 @@
+---
+title: "Two-Factor Authentication"
+description: "Add TOTP-based 2FA to your WordPress admin account"
+---
+
+The **Two-Factor** tab adds time-based one-time password (TOTP) authentication to your admin account. After setup, each login requires both your password and a 6-digit code from your authenticator app.
+
+To open this tab, click **WP Manager → Security** and select the **Two-Factor** tab.
+
+## Technical details
+
+The 2FA implementation is 100% native PHP with no Composer dependencies:
+
+- **Algorithm:** RFC 6238 TOTP — `hash_hmac('sha1', ...)`, 6 digits, 30-second window
+- **Secret:** 20-byte random secret generated with `random_bytes()`, encoded as base32 (custom encoder/decoder — no external library)
+- **Verification:** A ±1 window (±30 seconds) is accepted to account for clock drift
+- **Backup codes:** 8 codes generated with `random_bytes(4)` each, stored as MD5 hashes in user meta
+- **Storage:** Secret and enabled flag stored in `wp_usermeta` under `wmp_2fa_secret` and `wmp_2fa_enabled`; backup codes under `wmp_2fa_backup_codes`
+- **Scope:** Per-user — each admin account manages their own 2FA independently
+
+## Setting up 2FA
+
+<Warning>
+You will be shown 8 backup codes exactly once after verifying your setup. Save these codes in a secure location before dismissing the screen. If you lose access to your authenticator app and have no backup codes, you will need to disable 2FA directly in the database.
+</Warning>
+
+<Steps>
+  <Step title="Install an authenticator app">
+    Install a TOTP-compatible authenticator app on your phone before you start. Compatible apps include:
+    - Google Authenticator (iOS / Android)
+    - Authy (iOS / Android / Desktop)
+    - Any other app that supports the `otpauth://totp/` URI scheme
+  </Step>
+  <Step title="Start the setup">
+    Click **Set Up Two-Factor Auth** on the Two-Factor tab. WP Manager Pro generates a fresh TOTP secret and stores it as a pending (unconfirmed) value in user meta.
+  </Step>
+  <Step title="Scan the QR code">
+    Open your authenticator app and scan the QR code displayed on screen. The QR code encodes a standard `otpauth://totp/` URI with your site name as the issuer and your WordPress email as the account label.
+
+    If your app does not support QR scanning, click the copy button next to the base32-encoded secret and enter it manually into your app using the **Enter setup key** option.
+  </Step>
+  <Step title="Enter the verification code">
+    Your authenticator app will display a 6-digit code that refreshes every 30 seconds. Type the current code into the verification field and click **Verify & Enable**.
+
+    WP Manager Pro validates the code with a ±1 time-step window using `hash_hmac('sha1', ...)`. If the code is correct, 2FA is activated on your account.
+  </Step>
+  <Step title="Save your backup codes">
+    After successful verification, 8 backup codes are displayed. Each code is a unique 8-character hex string. Copy all codes and store them somewhere safe — a password manager, printed paper stored securely, or an encrypted note.
+
+    These codes are shown exactly once. They are stored as MD5 hashes in user meta; the plain codes are never retrievable after this screen.
+  </Step>
+</Steps>
+
+## Using backup codes
+
+If you lose access to your authenticator app, enter one of your saved backup codes in place of the 6-digit TOTP code. Each backup code is single-use.
+
+<Note>
+WP Manager Pro's 2FA currently protects the WP Manager Pro interface session. Full WordPress login-page TOTP enforcement requires additional integration work outside the plugin scope.
+</Note>
+
+## Disabling 2FA
+
+If 2FA is active on your account, the tab shows a green confirmation banner and a **Disable 2FA** button. Clicking it sends a `DELETE` request to `/wp-json/wp-manager-pro/v1/security/2fa`, which deletes all 2FA user meta (`wmp_2fa_secret`, `wmp_2fa_enabled`, `wmp_2fa_backup_codes`, and the pending secret) for your user ID.

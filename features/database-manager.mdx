@@ -1,0 +1,136 @@
+---
+title: "Database Manager"
+description: "Browse tables, run queries, and manage your WordPress database"
+---
+
+Database Manager gives you direct access to your WordPress database from the browser. You can browse every table, view and edit individual rows, export tables as SQL dumps, run a safe Search & Replace across all tables, optimize tables, and execute read-only SQL queries.
+
+To open Database Manager, click **WP Manager → Database** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Table browser">
+
+## Table browser
+
+The **Tables** tab opens with a two-panel layout:
+
+- **Left panel** — a scrollable list of every table in the database, showing name, row count, and size in MB.
+- **Right panel** — the data viewer for the selected table.
+
+### Selecting a table
+
+Click any table name in the left panel to load its data in the right panel. The active selection is highlighted with a blue left border.
+
+### Table data viewer
+
+The right panel shows the table's rows in a paginated data grid. The header displays:
+- Table name
+- Total row count and current page range (e.g. `1–50 of 1,423`)
+- Primary key column name
+
+### Pagination and page size
+
+Use the pagination controls at the bottom of the grid to move between pages. The page size selector (default 50) supports 50, 100, 250, and 500 rows per page.
+
+### Export a table as SQL
+
+Click **Export SQL** in the table toolbar to download a `.sql` dump of the selected table. The file is streamed directly to the browser.
+
+### Optimize tables
+
+Click **Optimize All** in the page header to run `OPTIMIZE TABLE` on every table in the database at once. To optimize a single table, use the bulk optimize option available when a table is selected.
+
+  </Tab>
+  <Tab title="Row management">
+
+## Inserting rows
+
+Click **Add Row** in the table toolbar (only shown for tables with a primary key). A dialog opens with an input field for every column. Auto-increment primary key columns are disabled and filled automatically by the database. Click **Insert Row** to save.
+
+## Editing rows
+
+Hover over any row in the data grid to reveal the edit (pencil) and delete (trash) icons in the **Actions** column.
+
+Click the pencil icon to open the Edit Row dialog. Each column is shown with its name, data type, and an editable input. The primary key column is disabled. Click **Save Changes** to update the row.
+
+## Deleting rows
+
+Click the trash icon on a row to enter delete confirmation mode. The row shows a red **Confirm** button inline. Click **Confirm** to permanently delete the row, or **✕** to cancel.
+
+<Warning>
+Row deletions are immediate and irreversible. There is no trash or undo. Take a database backup before making bulk changes.
+</Warning>
+
+  </Tab>
+  <Tab title="Search & Replace">
+
+## Search & Replace
+
+The **Search & Replace** tab lets you find and replace text across every table and column in the entire database in one operation. It correctly handles PHP serialized data — string lengths in serialized arrays and objects are recalculated after each replacement so WordPress does not break.
+
+### Running a search & replace
+
+<Steps>
+  <Step title="Enter the search string">
+    Type the text you want to find in the **Search for** field.
+  </Step>
+  <Step title="Enter the replacement string">
+    Type the replacement text in the **Replace with** field. Leave it empty to delete all occurrences.
+  </Step>
+  <Step title="(Optional) configure options">
+    - **Dry run** (on by default) — preview which tables and how many rows would be affected without making any changes. Disable this to perform the actual replacement.
+    - **Case insensitive** — match text regardless of upper/lower case.
+  </Step>
+  <Step title="Run">
+    Click **Preview Changes** (dry run on) or **Run Search & Replace** (dry run off). A results card shows each affected table and the number of replacements made.
+  </Step>
+</Steps>
+
+<Warning>
+Always run a dry run first and take a database backup before executing a live search & replace. Replacements affect the entire database and cannot be automatically undone.
+</Warning>
+
+<Tip>
+Common uses: updating a site URL after migration (`http://old.com` → `https://new.com`), replacing a broken CDN hostname across all post content, or removing stale shortcode references.
+</Tip>
+
+  </Tab>
+  <Tab title="SQL runner">
+
+## SQL runner
+
+The **SQL Query** tab provides a free-form SQL editor for inspecting the database directly.
+
+<Note>
+The SQL runner is **read-only by design**. Only `SELECT`, `SHOW`, `DESCRIBE`, and `EXPLAIN` statements are accepted. `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, and all other write operations are blocked at the API level. Use the Table Data tab for row-level writes.
+</Note>
+
+### Running a query
+
+<Steps>
+  <Step title="Type your SQL">
+    Enter a SQL statement in the text area. The default example is `SELECT * FROM wp_options LIMIT 10`.
+  </Step>
+  <Step title="Click Run Query">
+    Click **Run Query** (or press the button). Results appear in a scrollable table below, showing all returned columns and rows. The result header shows the row count.
+  </Step>
+</Steps>
+
+### Example queries
+
+```sql
+-- Show all tables and their sizes
+SHOW TABLE STATUS;
+
+-- Inspect a table's structure
+DESCRIBE wp_posts;
+
+-- Explain a query execution plan
+EXPLAIN SELECT * FROM wp_postmeta WHERE meta_key = '_thumbnail_id';
+
+-- Read option values
+SELECT option_name, option_value FROM wp_options WHERE autoload = 'yes' LIMIT 20;
+```
+
+  </Tab>
+</Tabs>

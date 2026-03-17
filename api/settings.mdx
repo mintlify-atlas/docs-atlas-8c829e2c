@@ -1,0 +1,78 @@
+---
+title: "Settings API"
+description: "REST endpoints for managing WP Manager Pro branding and white-label settings"
+---
+
+The settings endpoints read and write the plugin's white-label branding configuration: custom plugin name, admin menu label, and sidebar logo. Changes take effect immediately after saving and reloading the page.
+
+## GET /settings
+
+Returns the current branding settings.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/settings \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="plugin_name" type="string">
+  Custom plugin name shown in the WordPress admin. Defaults to `"WP Manager Pro"` if not set.
+</ResponseField>
+
+<ResponseField name="menu_label" type="string">
+  Custom admin sidebar menu label. Defaults to `"WP Manager"` if not set.
+</ResponseField>
+
+<ResponseField name="logo_url" type="string">
+  URL to a custom logo image displayed in the sidebar. Empty string if not set.
+</ResponseField>
+
+### Example response
+
+```json
+{
+  "plugin_name": "Client Manager",
+  "menu_label": "Client Manager",
+  "logo_url": "https://yoursite.com/wp-content/uploads/2025/01/logo.png"
+}
+```
+
+---
+
+## POST /settings
+
+Saves branding settings. Only fields included in the request body are updated.
+
+### Request body
+
+<ParamField body="plugin_name" type="string">
+  Custom plugin name. Pass an empty string to reset to the default.
+</ParamField>
+
+<ParamField body="menu_label" type="string">
+  Custom admin menu label. Pass an empty string to reset to the default.
+</ParamField>
+
+<ParamField body="logo_url" type="string">
+  URL to a custom logo image. Use the WordPress Media Library to upload images and pass the returned URL here.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Settings saved." }
+```
+
+### Example
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/settings \
+  -H "X-WP-Nonce: <nonce>" \
+  -H "Content-Type: application/json" \
+  -d '{"plugin_name": "Site Manager", "menu_label": "Site Manager"}'
+```
+
+<Info>
+  A page reload is required after saving for the new plugin name and menu label to appear in the WordPress admin interface.
+</Info>

@@ -1,0 +1,158 @@
+---
+title: "Content Tools"
+description: "Bulk content management and cleanup utilities"
+---
+
+Content Tools provides four utilities for managing WordPress content at scale: a bulk post editor, a post duplicator, a scheduled post viewer, and a `wp_options` table editor.
+
+To open Content Tools, click **WP Manager → Content Tools** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Bulk editor">
+
+## Bulk editor tab
+
+The Bulk Editor lists all posts in your site and lets you update the status, author, or publish date of multiple posts in a single operation.
+
+### Filtering the post list
+
+Use the controls at the top to narrow the list before selecting posts:
+
+- **Post Type** — filter by any registered post type, or select **Any** to show all
+- **Status** — filter by `publish`, `draft`, `pending`, `private`, `trash`, `future`, or **Any**
+- **Search** — search by post title; press Enter or click the search button to apply
+
+### Selecting posts
+
+Click the checkbox on any row to select it. Use the checkbox in the table header to select or deselect all posts on the current page.
+
+### Applying bulk changes
+
+Once at least one post is selected, a blue **bulk edit** panel appears above the table. You can update any combination of:
+
+| Field | Options |
+|-------|---------|
+| **Change Status** | `publish`, `draft`, `pending`, `private`, `trash` (leave blank to keep current status) |
+| **Change Author** | Any user with authoring capability on the site |
+| **Set Publish Date (UTC)** | A date-time picker in UTC |
+
+Leave a field blank to leave that attribute unchanged. Click **Apply** to commit the changes. A toast confirms how many posts were updated.
+
+<Warning>
+Setting status to `trash` moves the selected posts to the trash. This action can be reversed by filtering the list by status `trash` and changing the status back to `publish` or `draft`.
+</Warning>
+
+  </Tab>
+  <Tab title="Duplicator">
+
+## Duplicator tab
+
+The Duplicator lets you create a draft copy of any post, page, or custom post type in a single click.
+
+### Copy options
+
+Before duplicating, choose what to carry over to the new draft:
+
+| Option | What it copies |
+|--------|----------------|
+| **Post Meta** | All `wp_postmeta` rows attached to the original post |
+| **Taxonomies / Categories** | All terms assigned to the post across all taxonomies |
+| **Featured Image** | The featured image (thumbnail) attachment ID |
+
+These checkboxes persist for the duration of your session. Toggle them before clicking **Duplicate**.
+
+### Finding a post to duplicate
+
+Filter by **Post Type** and use the search box to locate the post you want. The table shows title, type, status, and author.
+
+### Duplicating
+
+Click the **Duplicate** button on any row. The new post is created as a `draft`. A green banner appears at the top of the tab confirming the new post ID and providing an **Edit in WP** link to open it in the WordPress block editor.
+
+  </Tab>
+  <Tab title="Scheduled">
+
+## Scheduled tab
+
+The Scheduled tab lists all posts with a `future` status — posts that are scheduled to publish automatically at a specific time.
+
+### Reading the scheduled list
+
+| Column | Description |
+|--------|-------------|
+| **Title** | The post title and ID |
+| **Type** | The post type |
+| **Scheduled For** | The scheduled publish date and time |
+| **Author** | The post author |
+| **Time Until** | How long until the post publishes, shown as `in Xd Yh` or `in Xm`. Posts that have missed their publish time show **overdue** in red. |
+
+### Filtering and refreshing
+
+Use the **Post Type** dropdown to narrow the list. Click **Refresh** to reload the list and update all "Time Until" values.
+
+<Note>
+An **overdue** post means WP Cron has not yet fired to publish it. This usually happens on low-traffic sites where WP Cron relies on page visits. See [Cron Manager](/features/cron-manager) for how to set up a real cron job to prevent this.
+</Note>
+
+  </Tab>
+  <Tab title="Options editor">
+
+## Options editor tab
+
+The Options Editor gives you direct access to the `wp_options` table so you can read, edit, and delete option rows without using phpMyAdmin or WP-CLI.
+
+### Browsing options
+
+The table shows 30 options per page with columns for:
+
+| Column | Description |
+|--------|-------------|
+| **Option Name** | The option key. Core critical options (`siteurl`, `blogname`, `admin_email`, `active_plugins`, etc.) are marked **protected**. |
+| **Type** | The data type of the value: `string`, `integer`, `float`, `serialized`, `json`, or `empty`. |
+| **Autoload** | Whether WordPress loads this option on every page (`yes` or `no`). Autoloaded options highlighted in orange contribute to page load time. |
+| **Value Preview** | A truncated preview of the option value. Values over 500 characters show the first 60 characters with the total length. |
+
+### Searching and filtering
+
+- **Search** — filter by option name. For example, search `wmp_` to see all WP Manager Pro options.
+- **Autoload filter** — filter to show only `yes` or `no` autoloaded options.
+
+### Editing an option
+
+<Steps>
+  <Step title="Click the edit icon">
+    Click the pencil icon on any row. WP Manager Pro fetches the full, untruncated value from the database and opens an edit dialog.
+  </Step>
+  <Step title="Edit the value">
+    The dialog shows the option name (read-only), the current value in a full-height textarea, and the autoload setting. Edit the value directly — the data type badge is shown for reference.
+  </Step>
+  <Step title="Save">
+    Click **Save**. The option is updated in `wp_options` using `update_option()`.
+  </Step>
+</Steps>
+
+### Deleting an option
+
+Click the trash icon on any non-protected row. A confirmation dialog appears before the option is deleted. Protected options (`siteurl`, `blogname`, `admin_email`, `blogdescription`, `blogpublic`, `blog_public`, `active_plugins`) cannot be deleted through this interface.
+
+<Warning>
+Editing or deleting options in `wp_options` can break your site if you modify values used by WordPress core or active plugins. Only edit options you understand. Take a database backup first.
+</Warning>
+
+  </Tab>
+</Tabs>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/content/posts` | List posts with filters |
+| `POST` | `/wp-json/wp-manager-pro/v1/content/posts/bulk-edit` | Bulk-update status, author, or date for multiple posts |
+| `POST` | `/wp-json/wp-manager-pro/v1/content/posts/duplicate` | Duplicate a post |
+| `GET` | `/wp-json/wp-manager-pro/v1/content/scheduled` | List scheduled posts |
+| `GET` | `/wp-json/wp-manager-pro/v1/content/post-types` | List registered post types |
+| `GET` | `/wp-json/wp-manager-pro/v1/content/authors` | List authors |
+| `GET` | `/wp-json/wp-manager-pro/v1/content/options` | List `wp_options` rows (searchable, paginated) |
+| `GET` | `/wp-json/wp-manager-pro/v1/content/options/{name}` | Get the full value of a single option |
+| `POST` | `/wp-json/wp-manager-pro/v1/content/options` | Update an option |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/content/options` | Delete an option |

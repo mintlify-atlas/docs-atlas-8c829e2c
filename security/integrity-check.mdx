@@ -1,0 +1,89 @@
+---
+title: "Core File Integrity"
+description: "Verify your WordPress core files haven't been tampered with"
+---
+
+The **Integrity** tab checks every WordPress core file against the official MD5 checksums published by the WordPress.org API. Any file whose hash does not match — or that is missing entirely — is flagged so you can investigate and restore it.
+
+To open this tab, click **WP Manager → Security** and select the **Integrity** tab.
+
+## How the check works
+
+1. WP Manager Pro fetches the official checksum manifest from `https://api.wordpress.org/core/checksums/1.0/?version={version}&locale={locale}` using `wp_remote_get()` with a 15-second timeout.
+2. Every file path in the manifest is checked against its expected MD5 hash using `md5_file()`.
+3. Files inside `wp-content/` are excluded — this directory holds user-installed content (plugins, themes, uploads) that will legitimately differ from core.
+4. The result is returned as a summary with counts of clean, modified, and missing files.
+
+## Running the check
+
+Click **Run Integrity Check**. The scan runs synchronously on the server. For a typical WordPress install, it completes in a few seconds. A spinner is shown while the check is in progress.
+
+## Interpreting results
+
+### Clean result
+
+If all checked files match their expected hashes, a green banner confirms:
+
+> All N checked files are clean
+
+No action is required.
+
+### Modified files
+
+Modified files are shown in a red list. Each entry includes:
+
+| Field | Description |
+|-------|-------------|
+| Path | Relative path from `ABSPATH`, e.g. `wp-admin/includes/file.php` |
+| Last modified | File modification timestamp on disk |
+
+The expected and actual MD5 hashes are compared server-side; the UI highlights the path and date so you can quickly identify recently changed files.
+
+### Missing files
+
+Missing files are shown in an orange list. These are paths present in the WordPress checksum manifest that do not exist on disk at all.
+
+## What to do when files are flagged
+
+<Tabs>
+  <Tab title="Modified files">
+
+A modified core file could indicate:
+
+- **Malware injection** — malicious code appended to or inserted into a core file.
+- **Manual customisation** — changes you or a developer made directly to core (not recommended).
+- **Corrupted update** — a failed or partial WordPress core update left files in an inconsistent state.
+
+**Steps to resolve:**
+
+1. Download a fresh copy of the same WordPress version from wordpress.org.
+2. Compare the flagged file against the fresh copy to see what changed.
+3. If the change is malicious, replace the file with the clean version.
+4. If the change is a legitimate customisation, consider moving it to a child theme or plugin instead of modifying core.
+5. Re-run the integrity check to confirm the file is now clean.
+
+  </Tab>
+  <Tab title="Missing files">
+
+A missing core file typically means:
+
+- The file was deleted manually or by a security plugin.
+- A partial update removed the file without replacing it.
+- A malicious actor deleted the file to disable a security or logging feature.
+
+**Steps to resolve:**
+
+1. Download the matching WordPress version from wordpress.org.
+2. Copy the missing file to the correct location on your server.
+3. Re-run the integrity check to confirm the file is detected and clean.
+
+  </Tab>
+</Tabs>
+
+<Note>
+The check covers `wp-admin/` and `wp-includes/` as well as the root-level WordPress PHP files (e.g. `wp-settings.php`, `wp-load.php`). The `wp-content/` directory is intentionally excluded because it contains user-installed plugins, themes, and uploads that are not part of WordPress core.
+</Note>
+
+<Tip>
+Run an integrity check after any WordPress core update or if your site shows unexpected behaviour. It is also a useful first step when investigating a potential compromise.
+</Tip>

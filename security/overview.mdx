@@ -1,0 +1,51 @@
+---
+title: "Security Overview"
+description: "At-a-glance status for all WP Manager Pro security features"
+---
+
+The Security Suite is a five-tab page that covers every major WordPress attack surface — login brute-force, site hardening, core file integrity, and two-factor authentication. A dedicated [Security Scanner](/security/security-scanner) page provides deeper threat detection including malware scanning, CVE lookups, and SSL checks.
+
+To open the Security Suite, click **WP Manager → Security** in the WordPress admin sidebar.
+
+## Overview tab
+
+The **Overview** tab loads immediately when you open the Security Suite. It shows six status cards, each representing one security feature:
+
+| Feature | What it protects |
+|---------|------------------|
+| Admin URL | Custom login slug — hides `wp-login.php` |
+| Login Limiter | Brute-force protection via attempt counting |
+| IP Blocklist | Blocks specific IPs or CIDR ranges on `init` |
+| XML-RPC | Disabled via `xmlrpc_enabled` filter |
+| Hide WP Version | Removes version from meta tag and asset URLs |
+| Two-Factor Auth | TOTP-based 2FA on the current admin account |
+
+Each card shows a green **On** badge when the feature is active, or a grey **Off** badge when it is not. The current WordPress version and locale are displayed at the bottom of the tab with a link to the **Integrity** tab.
+
+## Security principles
+
+All security endpoints in WP Manager Pro follow the same access model:
+
+- Every REST route under `wp-manager-pro/v1/security/*` requires the `manage_options` capability. Users without administrator access receive a `403 Forbidden` response.
+- All requests are validated with a WordPress nonce (`wp_rest`) sent in the `X-WP-Nonce` header.
+- All user-supplied values are sanitized before storage — `sanitize_text_field()`, `sanitize_title_with_dashes()`, `absint()`, and `filter_var()` are used throughout the security controller.
+
+## Security feature pages
+
+<CardGroup cols={2}>
+  <Card title="Login Protection" icon="lock" href="/security/login-protection">
+    Move your login page to a secret URL and limit brute-force login attempts.
+  </Card>
+  <Card title="Hardening" icon="shield-check" href="/security/hardening">
+    Disable XML-RPC, hide the WordPress version, and block IPs or CIDR ranges.
+  </Card>
+  <Card title="Core File Integrity" icon="file-search" href="/security/integrity-check">
+    Verify every file in `wp-admin/` and `wp-includes/` against official WordPress checksums.
+  </Card>
+  <Card title="Two-Factor Authentication" icon="smartphone" href="/security/two-factor-auth">
+    Add TOTP-based 2FA to your WordPress admin account with backup codes.
+  </Card>
+  <Card title="Security Scanner" icon="scan-line" href="/security/security-scanner">
+    Scan for malware, check plugin CVEs, verify your SSL certificate, and review core versions.
+  </Card>
+</CardGroup>

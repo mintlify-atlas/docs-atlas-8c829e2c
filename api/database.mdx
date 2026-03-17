@@ -1,0 +1,263 @@
+---
+title: "Database API"
+description: "REST endpoints for the database manager"
+---
+
+The database endpoints provide read and write access to all MySQL/MariaDB tables in the WordPress database. You can browse tables, paginate through rows, run read-only SQL queries, perform search-replace operations, optimize tables, export SQL dumps, and manage individual rows.
+
+## GET /database/tables
+
+Lists all tables in the current database with metadata.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/database/tables \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="tables" type="object[]">
+  Array of table metadata objects, sorted alphabetically by name.
+  <Expandable title="properties">
+    <ResponseField name="tables[].name" type="string">Table name.</ResponseField>
+    <ResponseField name="tables[].rows" type="string">Approximate row count from `SHOW TABLE STATUS`.</ResponseField>
+    <ResponseField name="tables[].size_mb" type="string">Combined data and index size in megabytes.</ResponseField>
+    <ResponseField name="tables[].data_free" type="string">Free space in bytes (available for reclamation by OPTIMIZE).</ResponseField>
+    <ResponseField name="tables[].engine" type="string">Storage engine (e.g. `"InnoDB"`).</ResponseField>
+    <ResponseField name="tables[].collation" type="string">Table collation (e.g. `"utf8mb4_unicode_ci"`).</ResponseField>
+    <ResponseField name="tables[].created_at" type="string">Table creation timestamp.</ResponseField>
+    <ResponseField name="tables[].is_wp" type="boolean">Whether the table name starts with the WordPress table prefix.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">Total number of tables.</ResponseField>
+<ResponseField name="total_size" type="number">Sum of all table sizes in megabytes, rounded to 2 decimal places.</ResponseField>
+<ResponseField name="prefix" type="string">Current WordPress table prefix.</ResponseField>
+
+---
+
+## GET /database/table-data
+
+Returns paginated rows from a specific table along with column metadata.
+
+### Query parameters
+
+<ParamField query="table" type="string" required>
+  Table name.
+</ParamField>
+
+<ParamField query="page" type="number" default="1">
+  Page number.
+</ParamField>
+
+<ParamField query="limit" type="number" default="50">
+  Rows per page. Maximum value is 500.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="table" type="string">Table name.</ResponseField>
+<ResponseField name="columns" type="string[]">Ordered list of column names.</ResponseField>
+<ResponseField name="col_meta" type="object">
+  Column metadata keyed by column name.
+  <Expandable title="properties">
+    <ResponseField name="col_meta[field].type" type="string">MySQL column type (e.g. `"bigint(20)"`).</ResponseField>
+    <ResponseField name="col_meta[field].null" type="boolean">Whether the column accepts NULL.</ResponseField>
+    <ResponseField name="col_meta[field].key" type="string">Key type: `"PRI"`, `"UNI"`, `"MUL"`, or empty.</ResponseField>
+    <ResponseField name="col_meta[field].default" type="string | null">Column default value.</ResponseField>
+    <ResponseField name="col_meta[field].extra" type="string">Extra attributes (e.g. `"auto_increment"`).</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="primary_key" type="string">Name of the primary key column.</ResponseField>
+<ResponseField name="rows" type="object[]">Array of row objects with column names as keys.</ResponseField>
+<ResponseField name="total" type="number">Total row count in the table.</ResponseField>
+<ResponseField name="page" type="number">Current page number.</ResponseField>
+<ResponseField name="limit" type="number">Rows per page.</ResponseField>
+<ResponseField name="pages" type="number">Total number of pages.</ResponseField>
+
+---
+
+## POST /database/search-replace
+
+Performs a search-and-replace across one or more tables. Correctly handles PHP serialized data by unserializing, replacing, and re-serializing with corrected string lengths.
+
+### Request body
+
+<ParamField body="search" type="string" required>
+  The string to search for.
+</ParamField>
+
+<ParamField body="replace" type="string" required>
+  The replacement string.
+</ParamField>
+
+<ParamField body="tables" type="string[]">
+  Array of table names to search. Defaults to all tables with the WordPress prefix if omitted.
+</ParamField>
+
+<ParamField body="dry_run" type="boolean" default="false">
+  When `true`, counts matches without making any changes.
+</ParamField>
+
+<ParamField body="case_insensitive" type="boolean" default="false">
+  When `true`, performs case-insensitive matching.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="dry_run" type="boolean">Mirrors the `dry_run` input parameter.</ResponseField>
+<ResponseField name="total" type="number">Total number of replacements made (or found in dry-run mode).</ResponseField>
+<ResponseField name="results" type="object[]">
+  Per-table results for tables where at least one match was found.
+  <Expandable title="properties">
+    <ResponseField name="results[].table" type="string">Table name.</ResponseField>
+    <ResponseField name="results[].count" type="number">Number of replacements in this table.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="message" type="string">Human-readable summary message.</ResponseField>
+
+---
+
+## POST /database/optimize
+
+Runs `OPTIMIZE TABLE` on one or more tables to reclaim fragmented space.
+
+### Request body
+
+<ParamField body="tables" type="string[]">
+  Array of table names to optimize. Defaults to all tables with the WordPress prefix if omitted.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="results" type="object[]">
+  Per-table optimization results.
+  <Expandable title="properties">
+    <ResponseField name="results[].table" type="string">Table name.</ResponseField>
+    <ResponseField name="results[].optimized" type="boolean">Whether optimization succeeded.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## POST /database/query
+
+Executes a read-only SQL query and returns the results.
+
+<Warning>
+Only `SELECT`, `SHOW`, `DESCRIBE`, `DESC`, and `EXPLAIN` statements are accepted. Any attempt to run a write operation (`INSERT`, `UPDATE`, `DELETE`, `DROP`, etc.) is rejected with a `403` error.
+</Warning>
+
+### Request body
+
+<ParamField body="sql" type="string" required>
+  The SQL query to execute. Must start with `SELECT`, `SHOW`, `DESCRIBE`, `DESC`, or `EXPLAIN`.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="columns" type="string[]">Column names from the result set.</ResponseField>
+<ResponseField name="rows" type="object[]">Array of row objects with column names as keys.</ResponseField>
+<ResponseField name="count" type="number">Number of rows returned.</ResponseField>
+
+---
+
+## POST /database/row
+
+Inserts a new row into a table.
+
+### Request body
+
+<ParamField body="table" type="string" required>
+  Target table name.
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  Key-value pairs of column names and values to insert. Only valid column names for the table are accepted.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="insert_id" type="number">Auto-incremented ID of the newly inserted row.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## PUT /database/row
+
+Updates an existing row identified by its primary key.
+
+### Request body
+
+<ParamField body="table" type="string" required>
+  Target table name.
+</ParamField>
+
+<ParamField body="primary_key" type="string" required>
+  Name of the primary key column.
+</ParamField>
+
+<ParamField body="primary_value" type="string | number" required>
+  Value of the primary key for the row to update.
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  Key-value pairs of column names and new values. Only valid column names for the table are accepted.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="rows_affected" type="number">Number of rows updated (typically 1).</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## DELETE /database/row
+
+Deletes a row from a table by its primary key.
+
+### Request body
+
+<ParamField body="table" type="string" required>
+  Target table name.
+</ParamField>
+
+<ParamField body="primary_key" type="string" required>
+  Name of the primary key column.
+</ParamField>
+
+<ParamField body="primary_value" type="string | number" required>
+  Value of the primary key for the row to delete.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="rows_affected" type="number">Number of rows deleted.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## GET /database/export
+
+Exports a table as a `.sql` dump file. The response is streamed directly as a file download and includes the `DROP TABLE IF EXISTS` statement, the `CREATE TABLE` definition, and all `INSERT` statements.
+
+### Query parameters
+
+<ParamField query="table" type="string" required>
+  Name of the table to export.
+</ParamField>
+
+### Response
+
+Streams the SQL dump as `text/plain` with `Content-Disposition: attachment; filename="{table}.sql"`.
+
+```bash
+curl "https://yoursite.com/wp-json/wp-manager-pro/v1/database/export?table=wp_options&_wpnonce=<nonce>" \
+  -o wp_options.sql
+```

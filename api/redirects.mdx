@@ -1,0 +1,155 @@
+---
+title: "Redirects API"
+description: "REST endpoints for managing 301/302/307/308 URL redirects with CSV import and export"
+---
+
+The redirects endpoints manage the redirect rules stored in `wp_wmp_redirects`. Each rule maps a source path to a destination URL with a configurable HTTP status code, wildcard support, a hit counter, and an active/inactive toggle.
+
+## GET /redirects
+
+Returns all redirect rules.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/redirects \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of redirect rule objects:
+
+<ResponseField name="[].id" type="number">Rule ID.</ResponseField>
+<ResponseField name="[].source" type="string">Source path (e.g. `"/old-page"`).</ResponseField>
+<ResponseField name="[].destination" type="string">Destination URL.</ResponseField>
+<ResponseField name="[].code" type="number">HTTP redirect status code (`301`, `302`, `307`, or `308`).</ResponseField>
+<ResponseField name="[].enabled" type="boolean">Whether the redirect is active.</ResponseField>
+<ResponseField name="[].hits" type="number">Number of times this rule has been matched.</ResponseField>
+<ResponseField name="[].created_at" type="string">Creation timestamp.</ResponseField>
+
+---
+
+## POST /redirects
+
+Creates a new redirect rule.
+
+### Request body
+
+<ParamField body="source" type="string" required>
+  Source path to match. Use `*` as a wildcard (e.g. `"/blog/*"`).
+</ParamField>
+
+<ParamField body="destination" type="string" required>
+  Destination URL (absolute or relative).
+</ParamField>
+
+<ParamField body="code" type="number" default="301">
+  HTTP redirect code. Must be one of `301`, `302`, `307`, or `308`.
+</ParamField>
+
+<ParamField body="enabled" type="boolean" default="true">
+  Whether the rule is active immediately.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="id" type="number">ID of the newly created rule.</ResponseField>
+
+### Example
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/redirects \
+  -H "X-WP-Nonce: <nonce>" \
+  -H "Content-Type: application/json" \
+  -d '{"source": "/old-about", "destination": "/about", "code": 301}'
+```
+
+---
+
+## PUT /redirects/{id}
+
+Updates an existing redirect rule.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  ID of the redirect rule to update.
+</ParamField>
+
+### Request body
+
+Accepts the same fields as `POST /redirects`. All fields are optional.
+
+### Response
+
+```json
+{ "success": true }
+```
+
+---
+
+## DELETE /redirects/{id}
+
+Permanently deletes a redirect rule.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  ID of the rule to delete.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true }
+```
+
+---
+
+## POST /redirects/export
+
+Generates a CSV export of all redirect rules and stores it as a temporary file for download via `GET /redirects/download`.
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/redirects/export \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="count" type="number">Number of rules exported.</ResponseField>
+
+---
+
+## GET /redirects/download
+
+Streams the most recently generated CSV export to the browser as a file download.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/redirects/download \
+  -H "X-WP-Nonce: <nonce>" \
+  -o redirects.csv
+```
+
+Returns the CSV file with `Content-Type: text/csv` and `Content-Disposition: attachment`.
+
+---
+
+## POST /redirects/import
+
+Imports redirect rules from a CSV file. The CSV must have columns `source`, `destination`, `code`, and `enabled`. Existing rules are not modified; only new rows are inserted.
+
+### Request body
+
+Send as `multipart/form-data` with the file in the `file` field.
+
+<ParamField body="file" type="file" required>
+  CSV file with columns: `source`, `destination`, `code`, `enabled`.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="imported" type="number">Number of rules successfully imported.</ResponseField>
+<ResponseField name="skipped" type="number">Rows skipped due to validation errors.</ResponseField>

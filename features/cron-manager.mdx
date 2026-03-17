@@ -1,0 +1,146 @@
+---
+title: "Cron Manager"
+description: "Manage WordPress cron events, schedules, and health"
+---
+
+Cron Manager gives you full visibility into WordPress's scheduled event system. You can inspect every scheduled event, trigger events on demand, create custom recurrence schedules, and diagnose cron health issues.
+
+To open Cron Manager, click **WP Manager → Cron Manager** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Events">
+
+## Events tab
+
+The Events tab lists every scheduled cron event sorted by next-run timestamp. Use the search box to filter events by hook name.
+
+### Reading the event list
+
+Each row in the events table shows:
+
+| Column | Description |
+|--------|-------------|
+| **Hook** | The WordPress action hook name. A `core` badge marks built-in WordPress events. An `args` badge appears on events with attached arguments. |
+| **Next Run** | When the event is next scheduled to run, colour-coded by urgency. |
+| **Schedule** | The recurrence interval (for example `Hourly`, `Daily`) and the raw interval in seconds. One-time events show `once`. |
+| **Actions** | Trigger or delete the event. |
+
+### Next-run colour coding
+
+| Colour | Meaning |
+|--------|---------|
+| Green | Scheduled in the future |
+| Amber | Running within the next 5 minutes |
+| Red | Overdue — should have run already |
+
+### Triggering an event manually
+
+Click the **Run** (play) button on any event row to execute the event immediately. WP Manager Pro calls the hook server-side and displays the result in an inline banner showing:
+
+- The hook name
+- Whether the execution succeeded or failed
+- The execution time in milliseconds
+- Any output captured from the hook
+
+The event list refreshes automatically after a manual trigger.
+
+### Deleting an event
+
+Click the trash icon to unschedule a custom (non-core) event. Core WordPress events cannot be deleted through this interface.
+
+  </Tab>
+  <Tab title="Schedules">
+
+## Schedules tab
+
+The Schedules tab lists every recurrence interval registered with WordPress, both built-in and custom. Custom schedules appear with a `custom` badge.
+
+| Column | Description |
+|--------|-------------|
+| **Key** | The machine-readable schedule key used in `wp_schedule_event()`. |
+| **Display Name** | The human-readable label shown in the WordPress admin. |
+| **Interval** | The recurrence interval in a human-readable format and raw seconds. |
+
+### Adding a custom schedule
+
+Use the **Add Custom Schedule** form to register a new recurrence interval:
+
+<Steps>
+  <Step title="Enter a key">
+    Type a lowercase, underscore-separated key. Example: `every_2_hours`. This is the value you pass to `wp_schedule_event()`.
+  </Step>
+  <Step title="Enter a display name">
+    Type a human-readable label. Example: `Every 2 Hours`.
+  </Step>
+  <Step title="Set the interval">
+    Enter the interval in seconds. Minimum value is 60. Example: `7200` for 2 hours.
+  </Step>
+  <Step title="Save">
+    Click **Add Schedule**. The new schedule appears immediately in the list and is available to all WP-Cron jobs.
+  </Step>
+</Steps>
+
+### Deleting a custom schedule
+
+Click the trash icon on any row marked with the `custom` badge to remove it. Built-in WordPress schedules (`hourly`, `twicedaily`, `daily`, `weekly`) are protected and cannot be deleted.
+
+  </Tab>
+  <Tab title="Health">
+
+## Health tab
+
+The Health tab provides an at-a-glance overview of your WP-Cron configuration and flags any potential problems.
+
+### Status cards
+
+<CardGroup cols={2}>
+  <Card title="WP-Cron" icon="clock">
+    Shows whether WP-Cron is enabled or disabled. Disabled means `DISABLE_WP_CRON` is set to `true` in `wp-config.php` — scheduled events will not fire automatically unless a real cron job is configured.
+  </Card>
+  <Card title="Overdue" icon="triangle-alert">
+    The number of events that have missed their scheduled run time. An amber card with a count indicates a cron backlog. The overdue events are listed below the cards.
+  </Card>
+  <Card title="Lock Timeout" icon="timer">
+    The value of the `WP_CRON_LOCK_TIMEOUT` constant in seconds. This is how long WordPress waits before allowing cron to run again after a lock is acquired. Default is 60 seconds.
+  </Card>
+  <Card title="Alternate Cron" icon="cpu">
+    Shows whether `ALTERNATE_WP_CRON` is enabled. Alternate cron uses a redirect-based approach to process cron events in the background, which can help on servers where standard WP-Cron is unreliable.
+  </Card>
+</CardGroup>
+
+### Real cron setup guide
+
+WP-Cron is a pseudo-cron system that fires only when a visitor loads a page on your site. On low-traffic sites, events can be delayed or missed entirely. The Real Cron Setup guide explains how to replace it with a real system cron job.
+
+<Steps>
+  <Step title="Disable the built-in pseudo-cron">
+    Add the following line to your `wp-config.php` file to prevent WordPress from firing cron on page load:
+
+    ```php
+    define('DISABLE_WP_CRON', true);
+    ```
+  </Step>
+  <Step title="Add a server crontab entry">
+    Add a crontab entry to run WP-Cron every 5 minutes. The crontab command is pre-filled with your site URL:
+
+    ```bash
+    */5 * * * * wget -q -O - https://yoursite.com/wp-cron.php?doing_wp_cron > /dev/null 2>&1
+    ```
+
+    Run `crontab -e` on your server to open the crontab editor and paste the command.
+  </Step>
+  <Step title="(Alternative) use WP-CLI">
+    If WP-CLI is installed on your server, use this command in your crontab instead:
+
+    ```bash
+    */5 * * * * cd /path/to/wordpress && wp cron event run --due-now
+    ```
+  </Step>
+</Steps>
+
+<Info>
+The crontab command and WP-CLI command shown in the Health tab are pre-filled with your actual site URL, so you can copy them directly without editing.
+</Info>
+
+  </Tab>
+</Tabs>

@@ -1,0 +1,109 @@
+---
+title: "User Manager"
+description: "Manage WordPress users, roles, and access"
+---
+
+User Manager displays all WordPress users in a paginated table with avatars, roles, registration dates, and post counts. You can change roles, rename login usernames, impersonate users via Login As, delete users, and filter the list by role or search query.
+
+To open User Manager, click **WP Manager → Users** in the WordPress admin sidebar.
+
+## User list
+
+The user table shows the following columns for each user:
+
+| Column | Description |
+|--------|-------------|
+| User | Gravatar avatar, display name, and login username. A **You** badge marks the currently logged-in admin. |
+| Email | The user's registered email address |
+| Role | Role badge(s) — administrator, editor, author, contributor, subscriber, or any custom role |
+| Registered | Account creation date |
+| Posts | Number of posts attributed to the user |
+| Actions | Rename, Role, Login As, Delete buttons |
+
+## Searching and filtering
+
+Use the search box to filter users by name, username, or email. Press **Enter** or click **Search** to apply. Use the role dropdown to filter the list to a specific role (e.g. show only **Editor** users).
+
+<Note>
+The user list returns up to 50 users per query. Search and role filters are applied server-side for performance.
+</Note>
+
+## Changing a user's role
+
+<Steps>
+  <Step title="Click Role">
+    Click the **Role** button on the user's row.
+  </Step>
+  <Step title="Select the new role">
+    A dialog opens with a dropdown of all registered WordPress roles. Select the desired role.
+  </Step>
+  <Step title="Save">
+    Click **Change Role**. The change takes effect immediately and the list refreshes.
+  </Step>
+</Steps>
+
+<Note>
+You cannot change your own role. The **Role** button is disabled on the row marked **You**. This prevents accidental self-lockout.
+</Note>
+
+## Renaming a login username
+
+WordPress does not provide a native way to change a user's login (`user_login`) after account creation. User Manager exposes this via the **Rename** action.
+
+<Steps>
+  <Step title="Click Rename">
+    Click the **Rename** button on the target user's row.
+  </Step>
+  <Step title="Enter the new username">
+    A dialog shows the current username and an input for the new one. The new username is validated with `sanitize_user()` and `validate_username()` and checked for conflicts with existing usernames.
+  </Step>
+  <Step title="Save">
+    Click **Change Username**. The user's `user_login` is updated in the database. The change takes effect on next login.
+  </Step>
+</Steps>
+
+<Note>
+You cannot rename your own username. The **Rename** button is disabled on the row marked **You**.
+</Note>
+
+## Login As (admin impersonation)
+
+Login As lets you log in as any other user on the site without knowing their password. It generates a secure one-time token and redirects you to WP Admin already authenticated as that user.
+
+<Steps>
+  <Step title="Click Login As">
+    Click the **Login As** button (blue, with a log-in icon) on the target user's row.
+  </Step>
+  <Step title="Automatic redirect">
+    WP Manager Pro calls the REST API, which generates a single-use token stored in WordPress transients. The browser is immediately redirected to a special URL that validates the token and logs you in as the target user.
+  </Step>
+  <Step title="Work as the user">
+    You are now browsing WP Admin as the impersonated user. To return to your own account, log out and log back in with your admin credentials.
+  </Step>
+</Steps>
+
+<Warning>
+Login As is a powerful feature. Anyone with `manage_options` access can impersonate any user on the site, including other administrators. Only grant WP Admin access to people you trust. Login As tokens are single-use, stored in WordPress transients, and expire after **5 minutes** if not used.
+</Warning>
+
+## Deleting users
+
+<Steps>
+  <Step title="Click the trash icon">
+    Click the red trash icon on the target user's row.
+  </Step>
+  <Step title="Confirm deletion">
+    A confirmation dialog warns that the action cannot be undone.
+  </Step>
+  <Step title="Delete">
+    Click **Delete User**. The user account is removed. Any posts they authored are reassigned to the current admin account.
+  </Step>
+</Steps>
+
+<Note>
+You cannot delete your own account. The trash icon is disabled on the row marked **You**.
+</Note>
+
+<Warning>
+User deletion is irreversible. The user's account data, meta, and session tokens are permanently removed from the database. Posts are reassigned rather than deleted.
+</Warning>

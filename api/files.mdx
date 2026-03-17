@@ -1,0 +1,188 @@
+---
+title: "Files API"
+description: "REST endpoints for the file manager"
+---
+
+The files endpoints provide full filesystem access rooted at `ABSPATH`. You can browse directory contents, read and write files, create directories, upload files, rename entries, and delete files or directories.
+
+<Warning>
+**Path traversal protection:** All paths are validated using `realpath()` before any operation. Any path that resolves outside of `ABSPATH` is rejected with a `403 Forbidden` response and never executed. You cannot escape the WordPress root directory. Additionally, the files `wp-config.php`, `.htaccess`, and `index.php` are permanently protected from deletion and renaming.
+</Warning>
+
+## GET /files
+
+Lists the contents of a directory. Directories appear before files; both groups are sorted alphabetically.
+
+### Query parameters
+
+<ParamField query="path" type="string" default="ABSPATH">
+  Absolute path to the directory to list. Defaults to the WordPress root (`ABSPATH`).
+</ParamField>
+
+### Response fields
+
+<ResponseField name="path" type="string">
+  Resolved absolute path of the listed directory.
+</ResponseField>
+
+<ResponseField name="items" type="object[]">
+  Files and directories in the listed path.
+  <Expandable title="properties">
+    <ResponseField name="items[].name" type="string">Entry name.</ResponseField>
+    <ResponseField name="items[].path" type="string">Full absolute path.</ResponseField>
+    <ResponseField name="items[].type" type="string">`"file"` or `"directory"`.</ResponseField>
+    <ResponseField name="items[].size" type="number | null">File size in bytes. `null` for directories.</ResponseField>
+    <ResponseField name="items[].modified" type="number">Unix timestamp of last modification.</ResponseField>
+    <ResponseField name="items[].writable" type="boolean">Whether the entry is writable by PHP.</ResponseField>
+    <ResponseField name="items[].ext" type="string | null">Lowercase file extension. `null` for directories.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="breadcrumbs" type="object[]">
+  Navigation path from root to the current directory.
+  <Expandable title="properties">
+    <ResponseField name="breadcrumbs[].name" type="string">Directory name or `"Root"`.</ResponseField>
+    <ResponseField name="breadcrumbs[].path" type="string">Absolute path.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="writable" type="boolean">
+  Whether the listed directory itself is writable by PHP.
+</ResponseField>
+
+---
+
+## GET /files/read
+
+Reads the text content of a file for display and editing.
+
+**Limits:**
+- Maximum file size: 2 MB
+- Allowed extensions: `php`, `js`, `jsx`, `ts`, `tsx`, `css`, `scss`, `less`, `html`, `htm`, `json`, `xml`, `txt`, `md`, `yml`, `yaml`, `env`, `htaccess`, `conf`, `config`, `ini`, `log`, `svg`, `twig`, `blade`
+
+### Query parameters
+
+<ParamField query="path" type="string" required>
+  Absolute path to the file to read.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="path" type="string">Resolved absolute path.</ResponseField>
+<ResponseField name="name" type="string">Filename.</ResponseField>
+<ResponseField name="content" type="string">Full text content of the file.</ResponseField>
+<ResponseField name="ext" type="string">Lowercase file extension.</ResponseField>
+<ResponseField name="size" type="number">File size in bytes.</ResponseField>
+<ResponseField name="modified" type="number">Unix timestamp of last modification.</ResponseField>
+<ResponseField name="writable" type="boolean">Whether the file is writable by PHP.</ResponseField>
+
+---
+
+## POST /files/write
+
+Writes (overwrites) a file with the provided text content.
+
+### Request body
+
+<ParamField body="path" type="string" required>
+  Absolute path to the file to write.
+</ParamField>
+
+<ParamField body="content" type="string" required>
+  New file content. Existing content is replaced entirely.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "File saved successfully.", "bytes": 1024 }
+```
+
+<ResponseField name="bytes" type="number">Number of bytes written.</ResponseField>
+
+---
+
+## DELETE /files/delete
+
+Deletes a file or directory (recursive for directories).
+
+Protected files (`wp-config.php`, `.htaccess`, `index.php`) cannot be deleted.
+
+### Request body
+
+<ParamField body="path" type="string" required>
+  Absolute path to the file or directory to delete.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Deleted successfully." }
+```
+
+---
+
+## POST /files/mkdir
+
+Creates a new directory. Intermediate parent directories are created automatically if they do not exist.
+
+### Request body
+
+<ParamField body="path" type="string" required>
+  Absolute path for the new directory (including the desired directory name).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Directory created.", "path": "/var/www/html/wp-content/my-new-dir" }
+```
+
+<ResponseField name="path" type="string">Absolute path of the created directory.</ResponseField>
+
+---
+
+## POST /files/upload
+
+Uploads a file to a specified directory. Send the request as `multipart/form-data`. The filename is sanitized with `sanitize_file_name()` before writing.
+
+### Request body
+
+<ParamField body="path" type="string" required>
+  Absolute path to the target directory.
+</ParamField>
+
+<ParamField body="file" type="file" required>
+  The file to upload.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="name" type="string">Sanitized filename as saved on disk.</ResponseField>
+<ResponseField name="path" type="string">Full absolute path of the uploaded file.</ResponseField>
+<ResponseField name="size" type="number">File size in bytes.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## POST /files/rename
+
+Renames a file or directory. The new name must not contain path separators. Protected files (`wp-config.php`, `.htaccess`, `index.php`) cannot be renamed.
+
+### Request body
+
+<ParamField body="path" type="string" required>
+  Absolute path to the file or directory to rename.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  New name for the file or directory (filename only, no path separators).
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+<ResponseField name="new_path" type="string">Full absolute path after renaming.</ResponseField>
+<ResponseField name="name" type="string">Sanitized new filename.</ResponseField>

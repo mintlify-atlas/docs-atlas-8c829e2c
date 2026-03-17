@@ -1,0 +1,267 @@
+---
+title: "Plugins API"
+description: "REST endpoints for managing WordPress plugins"
+---
+
+The plugins endpoints provide full lifecycle management for WordPress plugins: listing, activating, deactivating, deleting, installing from WordPress.org, searching, uploading, exporting, and updating.
+
+## GET /plugins
+
+Returns all installed plugins sorted alphabetically by name.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/plugins \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="plugins" type="object[]">
+  Array of installed plugin objects.
+  <Expandable title="properties">
+    <ResponseField name="plugins[].file" type="string">
+      Plugin file path relative to the plugins directory (e.g. `"akismet/akismet.php"`).
+    </ResponseField>
+    <ResponseField name="plugins[].name" type="string">
+      Human-readable plugin name.
+    </ResponseField>
+    <ResponseField name="plugins[].version" type="string">
+      Installed version.
+    </ResponseField>
+    <ResponseField name="plugins[].description" type="string">
+      Plugin description.
+    </ResponseField>
+    <ResponseField name="plugins[].author" type="string">
+      Author name.
+    </ResponseField>
+    <ResponseField name="plugins[].author_uri" type="string">
+      Author website URL.
+    </ResponseField>
+    <ResponseField name="plugins[].plugin_uri" type="string">
+      Plugin homepage URL.
+    </ResponseField>
+    <ResponseField name="plugins[].text_domain" type="string">
+      Plugin text domain.
+    </ResponseField>
+    <ResponseField name="plugins[].active" type="boolean">
+      Whether the plugin is currently active.
+    </ResponseField>
+    <ResponseField name="plugins[].has_update" type="boolean">
+      Whether an update is available from WordPress.org.
+    </ResponseField>
+    <ResponseField name="plugins[].network" type="boolean">
+      Whether the plugin is network-activated (multisite).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total number of installed plugins.
+</ResponseField>
+
+---
+
+## POST /plugins/activate
+
+Activates an installed plugin.
+
+### Request body
+
+<ParamField body="plugin" type="string" required>
+  Plugin file path relative to the plugins directory (e.g. `"akismet/akismet.php"`).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin activated successfully." }
+```
+
+---
+
+## POST /plugins/deactivate
+
+Deactivates an active plugin. WP Manager Pro itself cannot be deactivated via this endpoint.
+
+### Request body
+
+<ParamField body="plugin" type="string" required>
+  Plugin file path relative to the plugins directory.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin deactivated successfully." }
+```
+
+---
+
+## DELETE /plugins/delete
+
+Deactivates and permanently deletes a plugin. WP Manager Pro itself cannot be deleted via this endpoint.
+
+### Request body
+
+<ParamField body="plugin" type="string" required>
+  Plugin file path relative to the plugins directory.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin deleted successfully." }
+```
+
+---
+
+## POST /plugins/install
+
+Installs a plugin from the WordPress.org repository.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  WordPress.org plugin slug (e.g. `"akismet"`).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin installed successfully." }
+```
+
+---
+
+## GET /plugins/search
+
+Searches the WordPress.org plugin repository. Returns 12 results per page.
+
+### Query parameters
+
+<ParamField query="q" type="string" required>
+  Search query string.
+</ParamField>
+
+<ParamField query="page" type="number" default="1">
+  Page number for pagination.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="plugins" type="object[]">
+  Array of matching plugins from WordPress.org.
+  <Expandable title="properties">
+    <ResponseField name="plugins[].slug" type="string">Plugin slug.</ResponseField>
+    <ResponseField name="plugins[].name" type="string">Plugin name.</ResponseField>
+    <ResponseField name="plugins[].version" type="string">Latest version.</ResponseField>
+    <ResponseField name="plugins[].short_description" type="string">Short description.</ResponseField>
+    <ResponseField name="plugins[].author" type="string">Author name (may include HTML).</ResponseField>
+    <ResponseField name="plugins[].rating" type="number">Rating out of 100.</ResponseField>
+    <ResponseField name="plugins[].num_ratings" type="number">Total number of ratings.</ResponseField>
+    <ResponseField name="plugins[].downloaded" type="number">Total download count.</ResponseField>
+    <ResponseField name="plugins[].last_updated" type="string">Last updated date string.</ResponseField>
+    <ResponseField name="plugins[].icon" type="string">URL to the plugin icon image.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">Total matching results on WordPress.org.</ResponseField>
+<ResponseField name="pages" type="number">Total number of pages.</ResponseField>
+
+---
+
+## POST /plugins/upload
+
+Installs a plugin from an uploaded `.zip` file. Send the request as `multipart/form-data`.
+
+### Request body
+
+<ParamField body="file" type="file" required>
+  The plugin `.zip` file to upload. Must be a valid ZIP archive.
+</ParamField>
+
+<ParamField body="overwrite" type="boolean" default="false">
+  When `true`, overwrites an existing plugin with the same slug.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin uploaded and installed successfully." }
+```
+
+---
+
+## POST /plugins/export
+
+Creates a ZIP archive of an installed plugin and returns a time-limited download URL. The download URL expires after 5 minutes.
+
+### Request body
+
+<ParamField body="plugin" type="string" required>
+  Plugin file path relative to the plugins directory.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="download_url" type="string">Authenticated URL to download the ZIP. Valid for 5 minutes.</ResponseField>
+<ResponseField name="filename" type="string">Suggested filename for the ZIP (e.g. `"akismet.zip"`).</ResponseField>
+
+---
+
+## GET /plugins/download
+
+Streams the previously exported plugin ZIP. This endpoint is called automatically by the URL returned from `POST /plugins/export`.
+
+### Query parameters
+
+<ParamField query="key" type="string" required>
+  The one-time download key returned by the export endpoint.
+</ParamField>
+
+### Response
+
+Streams the ZIP file as `application/zip` with `Content-Disposition: attachment`. The file is deleted from the server after streaming.
+
+---
+
+## POST /plugins/update
+
+Updates a plugin to its latest available version from WordPress.org. Requires an update to be available in the WordPress update transient. Re-activates the plugin after updating if it was active before.
+
+### Request body
+
+<ParamField body="plugin" type="string" required>
+  Plugin file path relative to the plugins directory.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin updated successfully." }
+```
+
+<Info>If no update is available for the specified plugin, the endpoint returns a `400` error with code `no_update`.</Info>
+
+---
+
+## POST /plugins/install-version
+
+Installs a specific version of a plugin from WordPress.org. Useful for downgrading or pinning to a known-good version. Re-activates the plugin after installation if it was active before.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  WordPress.org plugin slug (lowercase letters, numbers, and hyphens only).
+</ParamField>
+
+<ParamField body="version" type="string" required>
+  Target version string (e.g. `"5.3.2"`).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Plugin v5.3.2 installed successfully." }
+```

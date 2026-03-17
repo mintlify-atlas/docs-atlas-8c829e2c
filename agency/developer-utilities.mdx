@@ -1,0 +1,238 @@
+---
+title: "Developer Utilities"
+description: "Advanced WordPress introspection and testing tools for developers"
+---
+
+Developer Utilities is a six-tab page added in v2.9.0. It provides low-level WordPress introspection tools for debugging, testing, and safely destructive operations that you would otherwise need external tools or command-line access for.
+
+To open Developer Utilities, click **WP Manager → Developer** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Hook Explorer">
+
+## Hook Explorer
+
+The Hook Explorer reads the global `$wp_filter` registry and displays every registered `add_action` and `add_filter` callback currently loaded in the WordPress runtime.
+
+### Using the explorer
+
+Enter a search term in the **hook name / callback** field or filter by **file path**, then click **Search Hooks**. Results are lazy-loaded on demand — the explorer does not scan hooks until you trigger a search.
+
+### Results table
+
+| Column | Description |
+|--------|-------------|
+| Hook | The action or filter name (e.g. `init`, `wp_head`, `the_content`) |
+| Priority | Callback priority. Priority `1` is highlighted red; `10` (default) is blue |
+| Callback | The function or method name registered with `add_action` / `add_filter` |
+| File : Line | Source file path and line number resolved via PHP Reflection |
+
+The table supports up to 2,000 results per query. When the limit is reached, a badge prompts you to refine your search.
+
+Long hook names, callback strings, and file paths are truncated in the table but reveal their full value in a tooltip on hover.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/hooks` | Query `$wp_filter`; accepts `search` and `file` query params |
+
+  </Tab>
+  <Tab title="REST API Tester">
+
+## REST API tester
+
+The REST API Tester is a built-in Postman-style client that sends requests to the WordPress REST API pre-authenticated with the current user's WP nonce. You do not need to manage authentication headers manually.
+
+### Route browser
+
+The left panel lists all registered REST routes grouped by namespace (e.g. `wp/v2`, `wp-manager-pro/v1`, `wc/v3`). Click any route to populate the method and path fields in the request builder. Use the search box to filter routes by path.
+
+Namespace groups are collapsible. Each group shows the number of routes it contains.
+
+### Request builder
+
+| Field | Description |
+|-------|-------------|
+| Method | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE` |
+| Path | The route path relative to `/wp-json/` (e.g. `/wp/v2/posts`) |
+| Body | JSON body for non-`GET` requests. The field is hidden for `GET` requests |
+| Headers | Optional custom headers. Click **Add Header** to add a key-value row |
+
+Click **Send Request** to execute. The button is disabled until a path is entered.
+
+### Response panel
+
+After a successful request, the response panel appears below the builder and shows:
+
+- **Status code** — coloured badge: green for 2xx, red for 4xx/5xx
+- **Duration** — round-trip time in milliseconds
+- **Body** — pretty-printed JSON
+
+<Note>
+All requests are proxied through the plugin's own REST endpoint (`POST /developer/rest-request`), which injects the WordPress authentication nonce automatically. You cannot use this tester to send unauthenticated requests.
+</Note>
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/rest-routes` | List all registered REST routes grouped by namespace |
+| `POST` | `/developer/rest-request` | Proxy an authenticated REST request |
+
+  </Tab>
+  <Tab title="Dummy Data">
+
+## Dummy data generator
+
+The Dummy Data Generator creates realistic test content so you can develop and test without affecting real site data. Every generated item is tagged with the `_wmp_dummy_data` post meta key or user meta key for reliable, one-click bulk cleanup.
+
+### Stats cards
+
+Three stat cards at the top of the tab show how many dummy posts, dummy users, and total dummy items currently exist in the database.
+
+### Generating items
+
+Select a content type and enter a count (1–50), then click **Generate**.
+
+| Type | Description |
+|------|-------------|
+| Post | Published posts with lorem ipsum content |
+| Page | Published pages with lorem ipsum content |
+| User | Subscriber-role accounts with `@wmp-dummy.test` email addresses |
+| WooCommerce Product | Simple products (only available when WooCommerce is active) |
+
+After generation, the IDs of newly created items are displayed as badges below the form.
+
+<Warning>
+Generated posts and pages are published immediately and are visible to site visitors. Never generate dummy data on a live production site — use a staging environment.
+</Warning>
+
+### Cleaning up
+
+When dummy items exist, a **Delete All Dummy Data** button appears. Clicking it opens a confirmation dialog. Confirm deletion to permanently remove all posts, pages, products, and users that carry the `_wmp_dummy_data` tag.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/dummy-stats` | Count of current dummy posts and users |
+| `POST` | `/developer/generate` | Generate dummy items; accepts `type` and `count` |
+| `DELETE` | `/developer/dummy` | Delete all items tagged with `_wmp_dummy_data` |
+
+  </Tab>
+  <Tab title="Rewrite Rules">
+
+## Rewrite rules tester
+
+The Rewrite Rules Tester lets you test how WordPress resolves any URL path against its registered rewrite rules — without triggering an actual HTTP request.
+
+### Testing a URL
+
+Enter a URL path (relative to the site root, e.g. `2024/01/my-post-slug/`) in the input field and click **Test URL**. The result panel shows:
+
+| Field | Description |
+|-------|-------------|
+| Matched / No Match | Whether any rewrite rule matched the URL |
+| Matched rule | The regex pattern of the matching rule |
+| Redirect | The internal query string redirect (e.g. `index.php?p=123`) |
+| Resolved query vars | The parsed `$query_vars` array as key=value badges |
+| Captures | Regex capture group values from the matched rule |
+
+### Full rules table
+
+Click **Load All Rules** to fetch and display all registered rewrite rules. The table shows the regex **Pattern** and the **Redirect** target for each rule. The table is collapsible — click the header to expand or collapse it.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/rewrite-test` | Test a URL or load all rules; accepts `url` and `rules_only` params |
+
+  </Tab>
+  <Tab title="Object Cache">
+
+## Object cache browser
+
+The Object Cache Browser lets you inspect and delete individual keys in your WordPress object cache backend. It supports both Redis (via `SCAN`) and the WP internal runtime cache.
+
+### Browsing keys
+
+Optionally enter a prefix to filter results, then click **Browse Keys**. A backend badge identifies the active cache:
+
+- **Redis** — keys are listed via Redis `SCAN`
+- **WP Internal** — WP runtime cache entries are listed by group prefix
+- **Not Available** — shown when no persistent cache backend is detected
+
+### Keys table
+
+| Column | Description |
+|--------|-------------|
+| Key | Cache key string (truncated with tooltip on hover) |
+| Type | Redis data type: `string`, `list`, `set`, `hash`, or `zset` |
+| TTL | Time-to-live in seconds. `∞` for persistent keys, `expired` for elapsed keys |
+
+Click any row to load the key's value in the inspect panel on the right.
+
+### Inspecting a value
+
+The value panel displays the raw contents of the selected key. Objects and arrays are pretty-printed as JSON; scalar values are shown as plain text.
+
+### Deleting keys
+
+Click the trash icon in a key's row to delete that individual cache key. The key list refreshes automatically after deletion.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/cache-keys` | List cache keys; accepts optional `prefix` param |
+| `GET` | `/developer/cache-value` | Get value for a specific key |
+| `DELETE` | `/developer/cache-key` | Delete a specific cache key |
+
+  </Tab>
+  <Tab title="DB Prefix">
+
+## Database prefix changer
+
+The Database Prefix Changer renames the WordPress database table prefix across all tables, updates the `option_name` rows in the options table and `meta_key` rows in usermeta, and rewrites the `$table_prefix` variable in `wp-config.php` — all in a single operation.
+
+<Warning>
+**Back up your database before proceeding.** This operation renames database tables and modifies `wp-config.php`. If something goes wrong, you must restore from a backup — the operation cannot be automatically reversed. Run it on a staging clone first.
+</Warning>
+
+### Current prefix
+
+The current table prefix and total table count are shown at the top of the tab. Click the **Database Tables** card to expand a full list of all tables with their row counts.
+
+### Changing the prefix
+
+<Steps>
+  <Step title="Enter the new prefix">
+    Type the desired new prefix in the input field (e.g. `wp2_`). The prefix must contain only letters, numbers, and underscores. A trailing underscore is added automatically if omitted.
+  </Step>
+  <Step title="Preview changes">
+    Click **Preview Changes** to run a dry-run. A table shows the old and new name for every affected table. No changes are made at this step.
+  </Step>
+  <Step title="Review the preview">
+    Confirm that the table renames look correct. The preview table highlights old names in red and new names in green.
+  </Step>
+  <Step title="Rename prefix">
+    Click **Rename Prefix** (only enabled after a dry-run completes). A confirmation dialog opens.
+  </Step>
+  <Step title="Confirm in the dialog">
+    Check the **I have backed up my database** checkbox and type the new prefix exactly in the confirmation input. The **Confirm** button only becomes active when both conditions are met.
+  </Step>
+</Steps>
+
+On success, a toast reports how many tables were renamed and whether `wp-config.php` was updated. The page will require a reload because WordPress re-reads the prefix from `wp-config.php` on each request.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/developer/prefix-info` | Current prefix and full table list |
+| `POST` | `/developer/change-prefix` | Rename prefix; accepts `new_prefix` and `dry_run` (boolean) |
+
+  </Tab>
+</Tabs>

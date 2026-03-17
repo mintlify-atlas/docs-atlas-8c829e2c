@@ -1,0 +1,79 @@
+---
+title: "Requirements"
+description: "System requirements for WP Manager Pro"
+---
+
+Review these requirements before installing WP Manager Pro. The plugin is designed to run on any modern shared hosting environment, VPS, or local development stack that meets the minimums below.
+
+## Core requirements
+
+| Requirement | Minimum | Notes |
+|---|---|---|
+| WordPress | 5.9 | Declared in plugin header as `Requires at least: 5.9` |
+| PHP | 7.4 | Declared in plugin header as `Requires PHP: 7.4` |
+| MySQL / MariaDB | 5.6 | Required for custom plugin tables (`wp_wmp_notes`, `wp_wmp_audit_log`, etc.) |
+| Browser | ES2020+ | Chrome, Firefox, Edge, or Safari — current versions |
+
+<Note>
+  The browser requirement applies to anyone using the WP Manager Pro control panel. The frontend is a compiled React 19 app and requires a modern JavaScript engine. Internet Explorer is not supported.
+</Note>
+
+## PHP extension requirements
+
+Most features work with a standard PHP installation. Some optional features require additional extensions or a newer PHP version:
+
+| Feature | PHP requirement | Server library |
+|---|---|---|
+| WebP conversion on upload | 7.4+ | GD (with WebP support) or ImageMagick |
+| AVIF conversion on upload | **8.1+** | GD (`imageavif` function) or ImageMagick with AVIF codec |
+| SVG upload sanitization | 7.4+ | None (pure PHP) |
+| SSL certificate inspection | 7.4+ | `openssl` extension |
+
+<Tip>
+  The **Image Tools** page includes support status cards at the top that show exactly what your server supports: GD, ImageMagick, WebP, and AVIF. Check there first if image conversion features are not working.
+</Tip>
+
+<Warning>
+  AVIF support requires PHP 8.1 or later. Even if GD is installed, the `imageavif` function is only available from PHP 8.1. If your host runs PHP 7.4 or 8.0, AVIF conversion will not be available regardless of the ImageMagick version.
+</Warning>
+
+## Build requirements
+
+You only need these if you are building WP Manager Pro from source. Pre-built releases include compiled assets and require no Node.js on the server.
+
+| Requirement | Minimum |
+|---|---|
+| Node.js | 18 |
+| npm | 9 |
+
+The build command is:
+
+```bash
+npm install
+npm run build
+```
+
+This produces:
+
+| Output file | Size | Gzipped |
+|---|---|---|
+| `assets/build/index.js` | ~793 kB | ~220 kB |
+| `assets/build/style.css` | ~52 kB | ~9 kB |
+
+<Note>
+  The compiled assets are committed to the repository. If you install from a release ZIP, you do not need Node.js on your server or local machine.
+</Note>
+
+## WordPress REST API
+
+WP Manager Pro communicates entirely through the WordPress REST API (`wp-manager-pro/v1` namespace). Ensure the REST API is not disabled on your site.
+
+If another plugin or server rule blocks `wp-json/` routes, WP Manager Pro will not function. Common causes include:
+
+- Firewall or WAF rules blocking the REST API path
+- A plugin that disables REST API access for unauthenticated users (WP Manager Pro always sends authenticated requests, so this should not affect it)
+- Permalink structure set to **Plain** — the REST API requires pretty permalinks or the `?rest_route=` fallback
+
+<Tip>
+  If the control panel loads but API calls fail, open your browser developer tools and check the **Network** tab for blocked requests to `/wp-json/wp-manager-pro/v1/`.
+</Tip>

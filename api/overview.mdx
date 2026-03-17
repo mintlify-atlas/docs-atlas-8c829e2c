@@ -1,0 +1,70 @@
+---
+title: "API Overview"
+description: "REST API reference for WP Manager Pro"
+---
+
+WP Manager Pro exposes a secured REST API under the WordPress REST infrastructure. Every feature available in the admin UI — plugins, themes, files, database, users, and more — is accessible programmatically through this API.
+
+## Base URL
+
+```
+{site_url}/wp-json/wp-manager-pro/v1
+```
+
+Replace `{site_url}` with your WordPress site's URL, for example:
+
+```
+https://yoursite.com/wp-json/wp-manager-pro/v1
+```
+
+## Authentication
+
+All requests require a valid WordPress nonce generated with the `wp_rest` action. Pass it in the `X-WP-Nonce` request header.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/dashboard \
+  -H "X-WP-Nonce: <nonce_from_wp_localize_script>"
+```
+
+See the [Authentication](/api/authentication) page for full details on how to obtain and use the nonce.
+
+## Authorization
+
+Every route requires the `manage_options` capability. Users without this capability — including editors, authors, contributors, and subscribers — receive a `403 Forbidden` response.
+
+## Response format
+
+All responses are JSON. Successful responses include the requested data directly. Error responses always include `code`, `message`, and `data` fields:
+
+```json
+{
+  "code": "plugin_not_found",
+  "message": "Plugin not found.",
+  "data": {
+    "status": 404
+  }
+}
+```
+
+## Available endpoint groups
+
+<Columns cols={2}>
+  <Card title="Dashboard" icon="gauge" href="/api/dashboard">
+    Site stats, health info, plugin/theme/user counts, and pending updates.
+  </Card>
+  <Card title="Plugins" icon="puzzle-piece" href="/api/plugins">
+    List, activate, deactivate, delete, install, search, upload, export, update, and version-install plugins.
+  </Card>
+  <Card title="Themes" icon="palette" href="/api/themes">
+    List, activate, delete, install, search, upload, export, update, and version-install themes.
+  </Card>
+  <Card title="Files" icon="folder-open" href="/api/files">
+    Browse the filesystem, read and write files, upload, rename, delete, and create directories.
+  </Card>
+  <Card title="Database" icon="database" href="/api/database">
+    List tables, browse rows, run read-only queries, search-replace, optimize, export, and manage individual rows.
+  </Card>
+  <Card title="Users" icon="users" href="/api/users">
+    List users, change roles, impersonate via login-as token, delete, and rename user logins.
+  </Card>
+</Columns>

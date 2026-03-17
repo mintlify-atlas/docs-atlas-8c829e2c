@@ -1,0 +1,116 @@
+---
+title: "Reset API"
+description: "REST endpoints for previewing and executing a WordPress site content reset"
+---
+
+The reset endpoints allow you to selectively delete site content — posts, pages, comments, media, and non-admin users — using WordPress core deletion functions. The plugin's own settings and admin accounts are never affected.
+
+<Warning>
+  The reset operation permanently deletes content. It cannot be undone. Always take a backup before using these endpoints.
+</Warning>
+
+## GET /reset/status
+
+Returns live counts of deletable content for each category. Use this to preview how many items will be removed before executing the reset.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/reset/status \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="posts" type="number">
+  Number of posts that would be deleted.
+</ResponseField>
+
+<ResponseField name="pages" type="number">
+  Number of pages that would be deleted.
+</ResponseField>
+
+<ResponseField name="comments" type="number">
+  Number of comments that would be deleted.
+</ResponseField>
+
+<ResponseField name="media" type="number">
+  Number of media attachments that would be deleted.
+</ResponseField>
+
+<ResponseField name="users" type="number">
+  Number of non-administrator users that would be deleted.
+</ResponseField>
+
+---
+
+## POST /reset/execute
+
+Executes the content reset for the selected content types. Each type must be explicitly opted-in, and `confirm: true` must be present in the request body.
+
+<Warning>
+  This is a destructive, irreversible operation. Deleted content cannot be recovered. Set `confirm: true` only after the user has acknowledged the consequences.
+</Warning>
+
+### Request body
+
+<ParamField body="confirm" type="boolean" required>
+  Must be `true` to proceed. Requests without this field are rejected.
+</ParamField>
+
+<ParamField body="delete_posts" type="boolean">
+  Delete all posts.
+</ParamField>
+
+<ParamField body="delete_pages" type="boolean">
+  Delete all pages.
+</ParamField>
+
+<ParamField body="delete_comments" type="boolean">
+  Delete all comments.
+</ParamField>
+
+<ParamField body="delete_media" type="boolean">
+  Delete all media attachments.
+</ParamField>
+
+<ParamField body="delete_users" type="boolean">
+  Delete all non-administrator users.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  Always `true` when the operation completes.
+</ResponseField>
+
+<ResponseField name="deleted" type="object">
+  Counts of items deleted per category.
+  <Expandable title="properties">
+    <ResponseField name="deleted.posts" type="number">Posts deleted.</ResponseField>
+    <ResponseField name="deleted.pages" type="number">Pages deleted.</ResponseField>
+    <ResponseField name="deleted.comments" type="number">Comments deleted.</ResponseField>
+    <ResponseField name="deleted.media" type="number">Media attachments deleted.</ResponseField>
+    <ResponseField name="deleted.users" type="number">Users deleted.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/reset/execute \
+  -H "X-WP-Nonce: <nonce>" \
+  -H "Content-Type: application/json" \
+  -d '{"confirm": true, "delete_posts": true, "delete_comments": true}'
+```
+
+```json
+{
+  "success": true,
+  "deleted": {
+    "posts": 42,
+    "pages": 0,
+    "comments": 187,
+    "media": 0,
+    "users": 0
+  }
+}
+```

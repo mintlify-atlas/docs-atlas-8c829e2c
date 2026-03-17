@@ -1,0 +1,250 @@
+---
+title: "Themes API"
+description: "REST endpoints for managing WordPress themes"
+---
+
+The themes endpoints provide full lifecycle management for WordPress themes: listing, activating, deleting, installing from WordPress.org, searching, uploading, exporting, and updating.
+
+## GET /themes
+
+Returns all installed themes. The active theme appears first; remaining themes are sorted alphabetically.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/themes \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="themes" type="object[]">
+  Array of installed theme objects.
+  <Expandable title="properties">
+    <ResponseField name="themes[].slug" type="string">
+      Theme directory name (slug).
+    </ResponseField>
+    <ResponseField name="themes[].name" type="string">
+      Human-readable theme name.
+    </ResponseField>
+    <ResponseField name="themes[].version" type="string">
+      Installed version.
+    </ResponseField>
+    <ResponseField name="themes[].description" type="string">
+      Theme description.
+    </ResponseField>
+    <ResponseField name="themes[].author" type="string">
+      Author name.
+    </ResponseField>
+    <ResponseField name="themes[].author_uri" type="string">
+      Author website URL.
+    </ResponseField>
+    <ResponseField name="themes[].theme_uri" type="string">
+      Theme homepage URL.
+    </ResponseField>
+    <ResponseField name="themes[].screenshot" type="string">
+      Absolute URL to the theme screenshot image.
+    </ResponseField>
+    <ResponseField name="themes[].active" type="boolean">
+      Whether this is the currently active theme.
+    </ResponseField>
+    <ResponseField name="themes[].is_child" type="boolean">
+      Whether this is a child theme.
+    </ResponseField>
+    <ResponseField name="themes[].parent" type="string | null">
+      Name of the parent theme if this is a child theme, otherwise `null`.
+    </ResponseField>
+    <ResponseField name="themes[].has_update" type="boolean">
+      Whether an update is available from WordPress.org.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total number of installed themes.
+</ResponseField>
+
+---
+
+## POST /themes/activate
+
+Activates an installed theme.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  Theme slug (directory name).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme activated successfully." }
+```
+
+---
+
+## DELETE /themes/delete
+
+Permanently deletes an installed theme. The active theme cannot be deleted.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  Theme slug (directory name).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme deleted successfully." }
+```
+
+---
+
+## POST /themes/install
+
+Installs a theme from the WordPress.org theme repository.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  WordPress.org theme slug.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme installed successfully." }
+```
+
+---
+
+## GET /themes/search
+
+Searches the WordPress.org theme repository. Returns 12 results per page.
+
+### Query parameters
+
+<ParamField query="q" type="string" required>
+  Search query string.
+</ParamField>
+
+<ParamField query="page" type="number" default="1">
+  Page number for pagination.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="themes" type="object[]">
+  Array of matching themes from WordPress.org.
+  <Expandable title="properties">
+    <ResponseField name="themes[].slug" type="string">Theme slug.</ResponseField>
+    <ResponseField name="themes[].name" type="string">Theme name.</ResponseField>
+    <ResponseField name="themes[].version" type="string">Latest version.</ResponseField>
+    <ResponseField name="themes[].description" type="string">Theme description.</ResponseField>
+    <ResponseField name="themes[].author" type="string">Author username.</ResponseField>
+    <ResponseField name="themes[].screenshot_url" type="string">URL to the theme screenshot.</ResponseField>
+    <ResponseField name="themes[].rating" type="number">Rating out of 100.</ResponseField>
+    <ResponseField name="themes[].num_ratings" type="number">Total number of ratings.</ResponseField>
+    <ResponseField name="themes[].downloaded" type="number">Total download count.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">Total matching results on WordPress.org.</ResponseField>
+
+---
+
+## POST /themes/upload
+
+Installs a theme from an uploaded `.zip` file. Send the request as `multipart/form-data`.
+
+### Request body
+
+<ParamField body="file" type="file" required>
+  The theme `.zip` file to upload. Must be a valid ZIP archive.
+</ParamField>
+
+<ParamField body="overwrite" type="boolean" default="false">
+  When `true`, overwrites an existing theme with the same slug.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme uploaded and installed successfully." }
+```
+
+---
+
+## POST /themes/export
+
+Creates a ZIP archive of an installed theme and returns a time-limited download URL. The download URL expires after 5 minutes.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  Theme slug (directory name).
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="download_url" type="string">Authenticated URL to download the ZIP. Valid for 5 minutes.</ResponseField>
+<ResponseField name="filename" type="string">Suggested filename for the ZIP (e.g. `"twentytwentyfour.zip"`).</ResponseField>
+
+---
+
+## GET /themes/download
+
+Streams the previously exported theme ZIP. This endpoint is called automatically by the URL returned from `POST /themes/export`.
+
+### Query parameters
+
+<ParamField query="key" type="string" required>
+  The one-time download key returned by the export endpoint.
+</ParamField>
+
+### Response
+
+Streams the ZIP file as `application/zip` with `Content-Disposition: attachment`. The file is deleted from the server after streaming.
+
+---
+
+## POST /themes/update
+
+Updates a theme to its latest available version from WordPress.org. Requires an update to be available in the WordPress update transient.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  Theme slug (directory name).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme updated successfully." }
+```
+
+<Info>If no update is available for the specified theme, the endpoint returns a `400` error with code `no_update`.</Info>
+
+---
+
+## POST /themes/install-version
+
+Installs a specific version of a theme from WordPress.org. Useful for downgrading or pinning to a known-good version.
+
+### Request body
+
+<ParamField body="slug" type="string" required>
+  WordPress.org theme slug (lowercase letters, numbers, and hyphens only).
+</ParamField>
+
+<ParamField body="version" type="string" required>
+  Target version string (e.g. `"3.1.0"`).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Theme v3.1.0 installed successfully." }
+```

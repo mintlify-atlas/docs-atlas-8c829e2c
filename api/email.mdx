@@ -1,0 +1,182 @@
+---
+title: "Email API"
+description: "REST endpoints for SMTP configuration, test email delivery, and the email log"
+---
+
+The email endpoints configure SMTP settings for outgoing WordPress mail, send test messages to verify your configuration, and manage the email log which captures every `wp_mail()` call.
+
+## GET /email/settings
+
+Returns the current SMTP configuration.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/email/settings \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="enabled" type="boolean">
+  Whether SMTP is active. When `false`, WordPress uses its default PHP mail delivery.
+</ResponseField>
+
+<ResponseField name="host" type="string">
+  SMTP server hostname (e.g. `"smtp.gmail.com"`).
+</ResponseField>
+
+<ResponseField name="port" type="number">
+  SMTP port (e.g. `587`, `465`, `25`).
+</ResponseField>
+
+<ResponseField name="username" type="string">
+  SMTP authentication username.
+</ResponseField>
+
+<ResponseField name="encryption" type="string">
+  Encryption method: `"tls"`, `"ssl"`, or `"none"`.
+</ResponseField>
+
+<ResponseField name="from_email" type="string">
+  The `From` email address used for outgoing mail.
+</ResponseField>
+
+<ResponseField name="from_name" type="string">
+  The `From` name used for outgoing mail.
+</ResponseField>
+
+<ResponseField name="log_enabled" type="boolean">
+  Whether the email log is active.
+</ResponseField>
+
+<ResponseField name="dev_mode" type="boolean">
+  When `true`, emails are logged but not actually delivered.
+</ResponseField>
+
+<Info>
+  The SMTP password is not returned in this response for security reasons.
+</Info>
+
+---
+
+## POST /email/settings
+
+Saves SMTP configuration.
+
+### Request body
+
+<ParamField body="enabled" type="boolean">
+  Enable or disable SMTP.
+</ParamField>
+
+<ParamField body="host" type="string">
+  SMTP server hostname.
+</ParamField>
+
+<ParamField body="port" type="number">
+  SMTP port.
+</ParamField>
+
+<ParamField body="username" type="string">
+  SMTP username.
+</ParamField>
+
+<ParamField body="password" type="string">
+  SMTP password. If omitted, the previously saved password is retained.
+</ParamField>
+
+<ParamField body="encryption" type="string">
+  Encryption method: `"tls"`, `"ssl"`, or `"none"`.
+</ParamField>
+
+<ParamField body="from_email" type="string">
+  From email address.
+</ParamField>
+
+<ParamField body="from_name" type="string">
+  From display name.
+</ParamField>
+
+<ParamField body="log_enabled" type="boolean">
+  Enable or disable email logging.
+</ParamField>
+
+<ParamField body="dev_mode" type="boolean">
+  Enable dev mode (log without sending).
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Email settings saved." }
+```
+
+---
+
+## POST /email/test
+
+Sends a test email using the current SMTP configuration to verify it is working.
+
+### Request body
+
+<ParamField body="to" type="string" required>
+  Recipient email address for the test message.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  `true` if the email was accepted by the SMTP server.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation or error message.
+</ResponseField>
+
+### Example
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/email/test \
+  -H "X-WP-Nonce: <nonce>" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "you@example.com"}'
+```
+
+---
+
+## GET /email/log
+
+Returns all entries in the email log.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/email/log \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of log entry objects:
+
+<ResponseField name="[].id" type="number">Log entry ID.</ResponseField>
+<ResponseField name="[].to" type="string">Recipient address.</ResponseField>
+<ResponseField name="[].subject" type="string">Email subject line.</ResponseField>
+<ResponseField name="[].body" type="string">Email body (HTML or plain text).</ResponseField>
+<ResponseField name="[].status" type="string">`"sent"` or `"failed"`.</ResponseField>
+<ResponseField name="[].error" type="string">Error message when status is `"failed"`. Empty string otherwise.</ResponseField>
+<ResponseField name="[].date" type="string">Timestamp when the email was sent or attempted.</ResponseField>
+
+---
+
+## DELETE /email/log/clear
+
+Clears all entries from the email log.
+
+```bash
+curl -X DELETE https://yoursite.com/wp-json/wp-manager-pro/v1/email/log/clear \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+```json
+{ "success": true }
+```

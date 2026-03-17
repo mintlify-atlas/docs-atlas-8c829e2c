@@ -1,0 +1,111 @@
+---
+title: "Redirect Manager"
+description: "Manage 301/302/307/308 redirects with CSV import/export"
+---
+
+Redirect Manager gives you full CRUD control over HTTP redirects without touching your `.htaccess` file or writing PHP. Redirects are stored in the database and evaluated by WordPress before content is rendered.
+
+To open Redirect Manager, click **WP Manager → Redirect Manager** in the WordPress admin sidebar.
+
+## Supported redirect types
+
+| Code | Name | When to use |
+|------|------|-------------|
+| **301** | Permanent | Page has moved forever; search engines transfer full link equity to the new URL |
+| **302** | Temporary | Page is temporarily at a different URL; search engines keep the original URL indexed |
+| **307** | Temporary (method preserved) | Like 302, but browsers must repeat the original HTTP method (POST stays POST) |
+| **308** | Permanent (method preserved) | Like 301, but the original HTTP method is preserved for all subsequent requests |
+
+## Creating a redirect
+
+<Steps>
+  <Step title="Open the form">
+    Click **Add Redirect** in the top-right corner of the page.
+  </Step>
+  <Step title="Enter the source path">
+    Type the path you want to redirect **from**, starting with `/`. For example: `/old-page`. You can use a wildcard `*` to match any continuation of a path, for example `/blog/2023/*`.
+  </Step>
+  <Step title="Enter the target URL">
+    Type the destination — either a relative path such as `/new-page` or a full URL such as `https://example.com/landing`.
+  </Step>
+  <Step title="Choose the redirect type">
+    Select **301**, **302**, **307**, or **308** from the dropdown.
+  </Step>
+  <Step title="Save">
+    Click **Create Redirect**. The rule is active immediately.
+  </Step>
+</Steps>
+
+## The redirect table
+
+The table lists every rule with the following columns:
+
+| Column | Description |
+|--------|-------------|
+| **Source** | The path being redirected from |
+| **Target** | The destination URL or path |
+| **Type** | The HTTP status code, colour-coded by type |
+| **Hits** | How many times this redirect has fired since it was created |
+| **Actions** | Edit and delete buttons (visible on row hover) |
+
+Use the **search box** to filter the table by source or target path. Pagination appears at 50 rows per page.
+
+## Wildcard matching
+
+Add a `*` anywhere in the source path to match a variable portion of the URL.
+
+```
+Source:  /old-blog/*
+Target:  /blog/
+Type:    301
+```
+
+This rule redirects `/old-blog/my-post`, `/old-blog/2022/03/title`, and any other URL that starts with `/old-blog/` to `/blog/`.
+
+<Tip>
+Use specific rules before wildcard rules. Rules are evaluated in the order they were created. If two rules could match the same URL, the rule with the lower ID fires first.
+</Tip>
+
+## CSV import and export
+
+Redirect Manager supports bulk operations via CSV, making it straightforward to migrate from another redirect plugin.
+
+### Exporting
+
+Click **Export CSV** to download all current redirects as a `.csv` file. The file can be opened in any spreadsheet application or used as a backup.
+
+### Importing
+
+<Steps>
+  <Step title="Prepare your CSV">
+    The import file must have the following columns in order:
+
+    ```
+    source,target,type
+    /old-page,/new-page,301
+    /temp-page,https://example.com,302
+    ```
+  </Step>
+  <Step title="Upload the file">
+    Click **Import CSV** and select your `.csv` file. The file is processed immediately.
+  </Step>
+  <Step title="Confirm the import">
+    A success toast shows how many redirects were imported. Duplicate source paths are skipped.
+  </Step>
+</Steps>
+
+<Note>
+The import does not delete existing redirects. It only adds new ones. To replace all redirects, clear the existing rules manually before importing.
+</Note>
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/redirects` | List redirects (paginated, searchable) |
+| `POST` | `/wp-json/wp-manager-pro/v1/redirects` | Create a redirect |
+| `PUT` | `/wp-json/wp-manager-pro/v1/redirects/{id}` | Update a redirect |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/redirects/{id}` | Delete a redirect |
+| `POST` | `/wp-json/wp-manager-pro/v1/redirects/export` | Export all redirects as CSV |
+| `GET` | `/wp-json/wp-manager-pro/v1/redirects/download` | Download the CSV export file |
+| `POST` | `/wp-json/wp-manager-pro/v1/redirects/import` | Import redirects from an uploaded CSV |

@@ -1,0 +1,130 @@
+---
+title: "Dashboard"
+description: "Real-time site health overview at a glance"
+---
+
+The Dashboard is the first screen you see when you open WP Manager Pro. It gives you an instant read on your site's health, resource usage, and content — all on one page without navigating elsewhere.
+
+## How to access it
+
+<Steps>
+  <Step title="Open WP Admin">
+    Log in to your WordPress admin panel.
+  </Step>
+  <Step title="Click WP Manager in the sidebar">
+    Find **WP Manager** in the left-hand WordPress admin menu and click it. The Dashboard loads automatically as the default view.
+  </Step>
+  <Step title="Refresh on demand">
+    Click the **Refresh** button in the top-right corner to pull the latest stats without reloading the page. The Dashboard also auto-refreshes every 30 seconds.
+  </Step>
+</Steps>
+
+## Alert banner
+
+If any of the following conditions are active, a yellow alert banner appears at the top of the Dashboard:
+
+| Alert | Meaning | Action |
+|-------|---------|--------|
+| Maintenance mode is active | Your site is showing a maintenance page to all visitors | Click **Manage →** to go to the Maintenance page |
+| Debug mode is enabled | `WP_DEBUG` is on — only appropriate in development | Click **Manage →** to go to Debug Tools |
+| Updates available | One or more plugins, themes, or WordPress core has a pending update | Counts are broken out by type |
+
+## Quick stats row
+
+Six cards across the top summarise the most-checked numbers:
+
+<CardGroup cols={3}>
+  <Card title="Posts" icon="file-text">
+    Total published posts on the site.
+  </Card>
+  <Card title="Pages" icon="file">
+    Total published pages on the site.
+  </Card>
+  <Card title="Plugins" icon="puzzle">
+    Active plugin count out of total installed (e.g. `8/12`). A warning badge appears when updates are pending. Click the card to go to Plugin Manager.
+  </Card>
+  <Card title="Themes" icon="palette">
+    Total installed themes. A warning badge appears when updates are pending. Click the card to go to Theme Manager.
+  </Card>
+  <Card title="Users" icon="users">
+    Total registered users. Click the card to go to User Manager.
+  </Card>
+  <Card title="DB Size" icon="database">
+    Current database size in MB. Click the card to go to Database Manager.
+  </Card>
+</CardGroup>
+
+## Site status panel
+
+The **Site Status** card shows the current values for key site properties:
+
+| Field | Description |
+|-------|-------------|
+| WordPress | Current WP version |
+| PHP | Current PHP version |
+| Active Theme | Name of the currently active theme |
+| Debug Mode | `Enabled` (amber warning) or `Disabled` (green check) |
+| Maintenance | `Active` (amber warning) or `Off` (green check) |
+
+## System resources panel
+
+The **System Resources** card surfaces PHP and server limits that commonly affect site behaviour:
+
+| Field | What it shows |
+|-------|---------------|
+| Memory Limit | PHP `memory_limit` (`ini_get`) |
+| Upload Max | `upload_max_filesize` — maximum single file upload size |
+| Max Exec Time | `max_execution_time` in seconds |
+| Database Size | Total size of all tables in the current database |
+| Uploads Size | Size of the `wp-content/uploads` folder |
+
+<Tip>
+If you see a low memory limit (e.g. 64M or 128M) and plugins are crashing, increase `memory_limit` in your `php.ini` or `wp-config.php` (`define('WP_MEMORY_LIMIT', '256M')`).
+</Tip>
+
+## Recent posts panel
+
+The **Recent Posts** card lists the most recently published posts with their titles and relative timestamps. Each title is a link that opens the post on the front end in a new tab.
+
+## Quick actions grid
+
+The **Quick Actions** section at the bottom provides one-click navigation to the most commonly used tools:
+
+<CardGroup cols={2}>
+  <Card title="Manage Plugins" icon="puzzle" href="/features/plugin-manager">
+    Install, activate, deactivate, and update plugins.
+  </Card>
+  <Card title="Manage Themes" icon="palette" href="/features/theme-manager">
+    Install, activate, and version-manage themes.
+  </Card>
+  <Card title="File Manager" icon="folder-open" href="/features/file-manager">
+    Browse and edit WordPress files with Monaco Editor.
+  </Card>
+  <Card title="Database" icon="database" href="/features/database-manager">
+    Browse tables, run search & replace, and query SQL.
+  </Card>
+  <Card title="User Manager" icon="users" href="/features/user-manager">
+    Manage users, roles, and admin impersonation.
+  </Card>
+  <Card title="Code Snippets" icon="code">
+    Run custom PHP, CSS, and JavaScript without editing files.
+  </Card>
+  <Card title="Image Tools" icon="image">
+    WebP/AVIF conversion, thumbnail regeneration.
+  </Card>
+  <Card title="Email / SMTP" icon="mail">
+    Configure and test outgoing email.
+  </Card>
+  <Card title="Backup" icon="hard-drive">
+    Create and download SQL database dumps.
+  </Card>
+  <Card title="Maintenance" icon="wrench" href="/features/maintenance-mode">
+    Toggle maintenance mode and customise the page.
+  </Card>
+  <Card title="Debug Tools" icon="bug">
+    Toggle WP_DEBUG constants and view the error log.
+  </Card>
+  <Card title="System Info" icon="server">
+    Detailed PHP, server, and database environment info.
+  </Card>
+</CardGroup>

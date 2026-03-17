@@ -1,0 +1,81 @@
+---
+title: "File Manager"
+description: "Browse and edit your WordPress filesystem with Monaco Editor"
+---
+
+File Manager gives you a full filesystem browser rooted at WordPress's `ABSPATH` (the directory where WordPress is installed). You can navigate directories, open and edit files with a VS Code-powered editor, upload files, rename items, create directories, and delete files — all from the browser.
+
+To open File Manager, click **WP Manager → File Manager** in the WordPress admin sidebar.
+
+## Browsing files
+
+The left panel shows the contents of the current directory. Directories are listed with a folder icon; files show an icon matching their type. Each item displays its name and, for files, its size.
+
+### Breadcrumb navigation
+
+A breadcrumb trail at the top of the file panel shows the current path relative to `ABSPATH`. Click any segment to jump directly to that directory. Click the home icon to return to the root.
+
+When you are inside a subdirectory, a **..** row appears at the top of the file list for quick navigation one level up.
+
+### File metadata
+
+Hovering a file or directory row reveals the following controls on the right:
+- A **Read-only** badge if the item is not writable by the web server
+- A rename (pencil) button
+- A delete (trash) button
+
+## Editing files
+
+Click any file to open it in the Monaco Editor panel on the right. The editor uses VS Code's rendering engine with full syntax highlighting for the following languages:
+
+| Extension | Language |
+|-----------|----------|
+| `.php` | PHP |
+| `.js`, `.jsx` | JavaScript |
+| `.ts`, `.tsx` | TypeScript |
+| `.css`, `.scss` | CSS |
+| `.html`, `.htm` | HTML |
+| `.json` | JSON |
+| `.xml` | XML |
+| `.md` | Markdown |
+| `.yml`, `.yaml` | YAML |
+| `.svg` | XML (SVG) |
+| `.sql` | SQL |
+| Other text files | Plain text |
+
+The editor header shows the filename, file extension badge, the full path in the status bar, and a line count. Click **Save** to write the file back to disk.
+
+<Warning>
+Editing files directly can break your site if mistakes are made. There is no undo beyond restoring a backup. Critical files (`wp-config.php`, `.htaccess`, `index.php`) cannot be deleted or renamed, but they **can** be edited. Proceed with care.
+</Warning>
+
+## File operations
+
+### Upload a file
+
+Click **Upload File** in the page header. A native file picker opens. Select any file to upload it to the current directory.
+
+### Create a directory
+
+Click **New Folder** in the page header. An inline input appears at the top of the file list. Type a name and press **Enter** (or click the save button). Press **Escape** to cancel.
+
+### Rename a file or folder
+
+Hover a row and click the pencil icon, or the icon appears on hover. A dialog prompts for the new name. The item is renamed in place.
+
+### Delete a file or folder
+
+Hover a row and click the trash icon. A confirmation dialog warns that the action cannot be undone. Deleting a directory removes all its contents recursively.
+
+## Security
+
+The File Manager enforces the following protections server-side:
+
+- **Path traversal prevention** — all requested paths are validated with PHP's `realpath()`. Any path that resolves outside `ABSPATH` is rejected.
+- **Critical file guard** — `wp-config.php`, `.htaccess`, and `index.php` are blocked from deletion and rename operations.
+- **2 MB read limit** — files larger than 2 MB cannot be opened in the editor. Binary files and unsupported extensions are not readable.
+- **Read-only display** — files not writable by the web server process show a **Read-only** badge; save attempts on those files return an error.
+
+<Note>
+All file operations go through the `wp-manager-pro/v1` REST API and require the `manage_options` capability. Lower-privileged users cannot access the File Manager API.
+</Note>

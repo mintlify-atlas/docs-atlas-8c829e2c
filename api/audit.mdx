@@ -1,0 +1,117 @@
+---
+title: "Audit API"
+description: "REST endpoints for the audit log — plugin, theme, user, and post event tracking"
+---
+
+The audit endpoints expose the event log that automatically tracks significant WordPress actions including plugin and theme changes, user operations, and post lifecycle events. The log can be filtered, exported to CSV, and cleared.
+
+## GET /audit
+
+Returns audit log entries, optionally filtered by action type.
+
+```bash
+curl "https://yoursite.com/wp-json/wp-manager-pro/v1/audit?type=plugin&limit=50" \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Query parameters
+
+<ParamField query="type" type="string">
+  Filter by action type (e.g. `"plugin_activated"`, `"user_deleted"`). Use `GET /audit/action-types` to list valid values.
+</ParamField>
+
+<ParamField query="limit" type="number" default="100">
+  Maximum number of entries to return.
+</ParamField>
+
+<ParamField query="offset" type="number" default="0">
+  Offset for pagination.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="items" type="object[]">
+  Array of audit log entries.
+  <Expandable title="properties">
+    <ResponseField name="items[].id" type="number">Entry ID.</ResponseField>
+    <ResponseField name="items[].action" type="string">Action type key (e.g. `"plugin_activated"`).</ResponseField>
+    <ResponseField name="items[].label" type="string">Human-readable action label.</ResponseField>
+    <ResponseField name="items[].user_id" type="number">WordPress user ID of the actor.</ResponseField>
+    <ResponseField name="items[].user_login" type="string">Username of the actor.</ResponseField>
+    <ResponseField name="items[].details" type="string">Additional context for the action.</ResponseField>
+    <ResponseField name="items[].ip" type="string">IP address of the request.</ResponseField>
+    <ResponseField name="items[].created_at" type="string">Timestamp when the event occurred.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="number">Total entries matching the filter.</ResponseField>
+
+---
+
+## DELETE /audit/clear
+
+Permanently removes all entries from the audit log.
+
+<Warning>
+  All audit history is deleted and cannot be recovered. Export the log first if you need to retain records.
+</Warning>
+
+```bash
+curl -X DELETE https://yoursite.com/wp-json/wp-manager-pro/v1/audit/clear \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+```json
+{ "success": true }
+```
+
+---
+
+## POST /audit/export
+
+Generates a CSV export of the current audit log and stores it temporarily for download. Call `GET /audit/download` after this to retrieve the file.
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/audit/export \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="count" type="number">Number of entries exported.</ResponseField>
+
+---
+
+## GET /audit/download
+
+Streams the most recently generated CSV export as a file download.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/audit/download \
+  -H "X-WP-Nonce: <nonce>" \
+  -o audit-log.csv
+```
+
+Returns the file with `Content-Type: text/csv` and `Content-Disposition: attachment`.
+
+---
+
+## GET /audit/action-types
+
+Returns all distinct action type keys present in the audit log. Use these values to filter `GET /audit`.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/audit/action-types \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of action type strings:
+
+```json
+["plugin_activated", "plugin_deactivated", "plugin_deleted", "theme_activated", "user_deleted", "post_published"]
+```

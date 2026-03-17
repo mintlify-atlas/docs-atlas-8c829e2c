@@ -1,0 +1,209 @@
+---
+title: "Media API"
+description: "REST endpoints for media library cleanup — orphaned, unused, duplicate, and compress operations"
+---
+
+The media endpoints help identify and clean up wasted storage in your media library. Operations cover orphaned attachments (missing files), unused attachments (no post references), duplicate detection by MD5 hash, and JPEG/PNG re-compression.
+
+## GET /media/overview
+
+Returns summary statistics for the media library.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/media/overview \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="total_attachments" type="number">
+  Total number of attachment posts in the database.
+</ResponseField>
+
+<ResponseField name="uploads_size" type="string">
+  Human-readable total size of the uploads directory (e.g. `"245.3 MB"`).
+</ResponseField>
+
+<ResponseField name="orphaned_count" type="number">
+  Number of attachments whose physical file is missing from disk.
+</ResponseField>
+
+<ResponseField name="unused_count" type="number">
+  Number of unattached attachments not referenced in any published content.
+</ResponseField>
+
+<ResponseField name="duplicate_count" type="number">
+  Number of attachments identified as duplicates (same MD5 hash as another file).
+</ResponseField>
+
+---
+
+## GET /media/orphaned
+
+Lists attachments whose physical file no longer exists on disk.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/media/orphaned \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of orphaned attachment objects:
+
+<ResponseField name="[].id" type="number">WordPress attachment post ID.</ResponseField>
+<ResponseField name="[].title" type="string">Attachment title.</ResponseField>
+<ResponseField name="[].file" type="string">Expected file path that is missing from disk.</ResponseField>
+<ResponseField name="[].date" type="string">Upload date.</ResponseField>
+
+---
+
+## DELETE /media/orphaned
+
+Bulk-deletes a list of orphaned attachments using `wp_delete_attachment`. This removes the attachment post and any database metadata.
+
+<Warning>
+  Deleted attachments cannot be recovered. Verify the list before submitting.
+</Warning>
+
+### Request body
+
+<ParamField body="ids" type="number[]" required>
+  Array of attachment post IDs to delete.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="deleted" type="number">Number of attachments successfully deleted.</ResponseField>
+
+---
+
+## GET /media/unused
+
+Lists attachments that are not attached to any post, not set as a featured image, and not referenced in the content of any published post.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/media/unused \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of attachment objects with thumbnail preview URLs and file sizes.
+
+<ResponseField name="[].id" type="number">Attachment ID.</ResponseField>
+<ResponseField name="[].title" type="string">Attachment title.</ResponseField>
+<ResponseField name="[].url" type="string">Attachment file URL.</ResponseField>
+<ResponseField name="[].thumbnail" type="string">Thumbnail URL for preview.</ResponseField>
+<ResponseField name="[].size" type="number">File size in bytes.</ResponseField>
+<ResponseField name="[].date" type="string">Upload date.</ResponseField>
+
+---
+
+## DELETE /media/unused
+
+Bulk-deletes unused attachments by ID.
+
+<Warning>
+  Deleted attachments cannot be recovered.
+</Warning>
+
+### Request body
+
+<ParamField body="ids" type="number[]" required>
+  Array of attachment post IDs to delete.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="deleted" type="number">Number of attachments deleted.</ResponseField>
+
+---
+
+## GET /media/duplicates
+
+Groups attachments by MD5 file hash to identify duplicate files. The oldest attachment in each group is designated the original; all others are duplicates.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/media/duplicates \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="groups" type="object[]">
+  Each group contains one or more duplicate attachments sharing the same file hash.
+  <Expandable title="properties">
+    <ResponseField name="groups[].hash" type="string">MD5 hash shared by all files in this group.</ResponseField>
+    <ResponseField name="groups[].original_id" type="number">ID of the oldest attachment (kept as original).</ResponseField>
+    <ResponseField name="groups[].duplicates" type="object[]">Array of duplicate attachment objects with `id`, `title`, `url`, and `size`.</ResponseField>
+    <ResponseField name="groups[].wasted_bytes" type="number">Total bytes consumed by the duplicate copies.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total_wasted_bytes" type="number">
+  Total bytes that can be freed by deleting all duplicates.
+</ResponseField>
+
+---
+
+## DELETE /media/duplicate
+
+Deletes a single duplicate attachment. Use the IDs returned in the `groups[].duplicates` array — do not pass the original ID.
+
+### Request body
+
+<ParamField body="id" type="number" required>
+  Attachment ID of the duplicate to delete.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /media/compress-candidates
+
+Lists all JPEG and PNG attachments in the media library along with their current file sizes. Use this list to select which images to compress.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/media/compress-candidates \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of compressible attachment objects:
+
+<ResponseField name="[].id" type="number">Attachment ID.</ResponseField>
+<ResponseField name="[].title" type="string">Attachment title.</ResponseField>
+<ResponseField name="[].file" type="string">Absolute path to the image file.</ResponseField>
+<ResponseField name="[].size" type="number">Current file size in bytes.</ResponseField>
+<ResponseField name="[].mime_type" type="string">MIME type (`image/jpeg` or `image/png`).</ResponseField>
+
+---
+
+## POST /media/compress
+
+Re-compresses a single JPEG or PNG attachment in-place using `wp_get_image_editor`. Returns before and after file sizes so the caller can show savings.
+
+### Request body
+
+<ParamField body="id" type="number" required>
+  Attachment ID to compress.
+</ParamField>
+
+<ParamField body="quality" type="number" default="82">
+  Compression quality (40–100).
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="before" type="number">File size in bytes before compression.</ResponseField>
+<ResponseField name="after" type="number">File size in bytes after compression.</ResponseField>
+<ResponseField name="saved" type="number">Bytes saved.</ResponseField>
+<ResponseField name="percent" type="number">Percentage reduction in file size.</ResponseField>

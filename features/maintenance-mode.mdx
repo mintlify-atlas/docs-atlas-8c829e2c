@@ -1,0 +1,136 @@
+---
+title: "Maintenance Mode"
+description: "Put your site in maintenance mode with a fully styled, customizable page"
+---
+
+Maintenance Mode lets you take your site offline for visitors with a single toggle, while logged-in administrators continue to access the site normally. The maintenance page is a standalone HTML file with fully inline CSS — no external dependencies, no PHP required to display it.
+
+To open Maintenance Mode, click **WP Manager → Maintenance** in the WordPress admin sidebar.
+
+## Enabling and disabling
+
+The status banner at the top of the page shows whether maintenance mode is currently **Active** or **Inactive**.
+
+- Click **Enable** to activate maintenance mode immediately. All visitor traffic is redirected to the maintenance page.
+- Click **Disable** to bring the site back online.
+- Click **Save Settings** to persist your design changes without changing the active state.
+
+<Warning>
+While maintenance mode is active, regular visitors cannot access any content on your site. Only logged-in administrators can view the site normally.
+</Warning>
+
+<Note>
+The maintenance page file is automatically removed when you disable maintenance mode or deactivate the plugin.
+</Note>
+
+## Settings tabs
+
+The settings panel is divided into three tabs:
+
+<Tabs>
+  <Tab title="Content">
+
+## Content tab
+
+Configures the text and status elements shown on the maintenance page.
+
+| Field | Description |
+|-------|-------------|
+| **Page Title** | Heading displayed on the maintenance page. Defaults to `Site Under Maintenance`. |
+| **Message** | Body text below the heading. Defaults to a generic maintenance message. |
+| **Show Badge** | Toggle to show or hide a status pill at the top of the page. |
+| **Badge Text** | The text inside the status pill. Maximum 30 characters. Defaults to `Maintenance Mode`. |
+
+  </Tab>
+  <Tab title="Appearance">
+
+## Appearance tab
+
+Controls the visual design of the maintenance page.
+
+### Gradient presets
+
+Choose from six built-in gradient presets to apply a complete colour scheme in one click:
+
+| Preset | Background start | Background end | Accent |
+|--------|-----------------|----------------|--------|
+| Midnight | `#1e1e2e` | `#0f3460` | `#4f8ef7` |
+| Sunset | `#ff6b6b` | `#ffa500` | `#fff` |
+| Forest | `#1a3a2a` | `#2d6a4f` | `#95d5b2` |
+| Royal | `#2d1b69` | `#11998e` | `#c9b1ff` |
+| Slate | `#1e293b` | `#334155` | `#94a3b8` |
+| Candy | `#833ab4` | `#fd1d1d` | `#fcb045` |
+
+Selecting a preset overwrites your custom colour values.
+
+### Custom colours
+
+Use the colour pickers and hex inputs to fine-tune four individual colour values:
+
+- **Background start** — the left or top colour of the gradient
+- **Background end** — the right or bottom colour of the gradient
+- **Accent / Divider** — the colour of the short decorative bar below the icon and the countdown tile numbers
+- **Text colour** — the colour of all text on the page
+
+### Page icon
+
+Choose an emoji to display at the top of the maintenance page. The icon uses a floating animation on the live page.
+
+Eight preset emojis are available: ⚙️ 🔧 🚀 🛠️ ⚡ 🌙 🔒 🎯
+
+You can also type any emoji directly into the custom input field.
+
+  </Tab>
+  <Tab title="Access &amp; Extras">
+
+## Access & Extras tab
+
+Configures the countdown timer, role bypass, maintenance scope, and the secret preview URL.
+
+### Countdown timer
+
+Enable **Show Countdown Timer** to display a live ticking countdown on the maintenance page. Set the **Countdown End Time** to a specific date and time. The countdown automatically ticks down to zero in the browser.
+
+If you disable the countdown but still set an end time, it is stored as informational metadata and can be referenced in your message text.
+
+### Bypass roles
+
+Specific WordPress roles can be granted access to the full site during maintenance. Administrators always bypass maintenance mode regardless of this setting.
+
+Check the roles you want to allow through. Users with those roles see the normal site when logged in.
+
+### Maintenance scope
+
+Choose which pages show the maintenance screen:
+
+| Scope | Behaviour |
+|-------|----------|
+| **Whole Site** | Every page shows maintenance mode. |
+| **Home Page Only** | Only the home page is restricted. |
+| **Specific Paths** | Restrict access to a list of URL paths you specify. |
+
+When **Specific Paths** is selected, enter one URL path per line. Wildcard `*` is supported, for example `/shop/*`.
+
+### Admin bar toggle
+
+Enable **Show Toggle in Admin Bar** to display a quick maintenance on/off switch in the WordPress admin bar. This lets you toggle maintenance mode without navigating to the settings page.
+
+### Secret bypass URL
+
+Generate a secret key to create a bypass URL that lets anyone with the link preview the full site during maintenance. Visiting the URL sets a 7-day cookie in the browser.
+
+Type a custom word in the key field, or click the refresh icon to auto-generate a random key. Click the copy icon to copy the full bypass URL to your clipboard. Changing the key invalidates any previously shared links. Click **Save Settings** to apply the new key.
+
+  </Tab>
+
+</Tabs>
+
+## Live preview
+
+The preview pane on the right side of the settings panel updates in real-time as you change any setting. The countdown tiles in the preview tick live in the browser so you can see the exact appearance before saving.
+
+## How it works
+
+When maintenance mode is enabled, WP Manager Pro writes a `wp-content/maintenance.php` file. WordPress checks for this file on every request and serves it to non-admin visitors automatically — this is built-in WordPress behaviour and requires no theme or plugin hooks.
+
+The generated file contains fully inline CSS so it renders correctly in any browser without loading WordPress's stylesheets or scripts.

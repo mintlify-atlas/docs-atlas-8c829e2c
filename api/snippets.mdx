@@ -1,0 +1,143 @@
+---
+title: "Snippets API"
+description: "REST endpoints for managing custom PHP, CSS, and JavaScript code snippets"
+---
+
+The snippets endpoints provide full CRUD management for code snippets stored in the `wp_wmp_snippets` database table. PHP snippets execute on `init`, CSS outputs to `wp_head`, and JavaScript outputs to `wp_footer`.
+
+## GET /snippets
+
+Returns all snippets ordered by creation date.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/snippets \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response
+
+An array of snippet objects:
+
+<ResponseField name="[].id" type="number">Unique snippet ID.</ResponseField>
+<ResponseField name="[].title" type="string">Snippet name.</ResponseField>
+<ResponseField name="[].type" type="string">Code type: `"php"`, `"css"`, or `"js"`.</ResponseField>
+<ResponseField name="[].code" type="string">The snippet source code.</ResponseField>
+<ResponseField name="[].enabled" type="boolean">Whether the snippet is currently active.</ResponseField>
+<ResponseField name="[].created_at" type="string">Creation timestamp.</ResponseField>
+<ResponseField name="[].updated_at" type="string">Last update timestamp.</ResponseField>
+
+---
+
+## POST /snippets
+
+Creates a new code snippet.
+
+### Request body
+
+<ParamField body="title" type="string" required>
+  Human-readable name for the snippet.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Snippet type. One of `"php"`, `"css"`, or `"js"`.
+</ParamField>
+
+<ParamField body="code" type="string" required>
+  The snippet source code.
+</ParamField>
+
+<ParamField body="enabled" type="boolean" default="true">
+  Whether the snippet should be active immediately after creation.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="id" type="number">ID of the newly created snippet.</ResponseField>
+
+### Example
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/snippets \
+  -H "X-WP-Nonce: <nonce>" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Remove admin bar", "type": "php", "code": "add_filter(\"show_admin_bar\", \"__return_false\");", "enabled": true}'
+```
+
+---
+
+## PUT /snippets/{id}
+
+Updates an existing snippet. All fields are optional — only provided fields are updated.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  ID of the snippet to update.
+</ParamField>
+
+### Request body
+
+<ParamField body="title" type="string">
+  New snippet name.
+</ParamField>
+
+<ParamField body="type" type="string">
+  New snippet type (`"php"`, `"css"`, or `"js"`).
+</ParamField>
+
+<ParamField body="code" type="string">
+  New snippet code.
+</ParamField>
+
+<ParamField body="enabled" type="boolean">
+  New enabled state.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true }
+```
+
+---
+
+## POST /snippets/{id}/toggle
+
+Toggles the enabled state of a snippet without modifying its code. This is equivalent to updating `enabled` on the snippet but is provided as a dedicated endpoint for quick toggling.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  ID of the snippet to toggle.
+</ParamField>
+
+### Request body
+
+<ParamField body="enabled" type="boolean" required>
+  New enabled state.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "enabled": true }
+```
+
+---
+
+## DELETE /snippets/{id}
+
+Permanently deletes a snippet from the database.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  ID of the snippet to delete.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true }
+```

@@ -1,0 +1,137 @@
+---
+title: "Settings & Branding"
+description: "White-label WP Manager Pro with a custom name, menu label, and logo"
+---
+
+The Settings page lets you white-label WP Manager Pro for client delivery, view the full plugin changelog, and look up answers to common questions. It has four tabs: **Branding**, **Export / Import**, **Changelog**, and **FAQ**.
+
+To open Settings, click **WP Manager → Settings** in the WordPress admin sidebar.
+
+<Tip>
+Branding changes let agencies present WP Manager Pro under their own product name. Your clients see a custom-named tool with your logo — not WP Manager Pro.
+</Tip>
+
+## Branding tab
+
+The Branding tab (introduced in v1.8.0, updated in v2.9.2) controls how the plugin appears inside the WordPress admin.
+
+### Plugin name
+
+Enter a custom name in the **Plugin Name** field. This is shown in the sidebar header at the top of the plugin's navigation panel. Leave the field blank to use the default: `WP Manager Pro`.
+
+### Admin menu label
+
+Enter a custom label in the **Admin Menu Label** field. This is the text that appears in the WordPress left-hand admin menu. Leave it blank to use the default: `WP Manager`.
+
+<Note>
+The WordPress admin menu is rendered server-side on every page load. After saving a new menu label, reload the browser tab to see the updated text in the WordPress sidebar.
+</Note>
+
+### Sidebar logo URL
+
+Enter an image URL in the **Custom Logo URL** field, or click **Select** to open the WordPress Media Library picker and choose an existing image.
+
+The chosen image replaces the default icon in the sidebar header.
+
+<Note>
+Recommended logo size: 28×28 px. A small preview of the selected image appears below the field once a URL is set.
+</Note>
+
+### Command palette shortcut
+
+The global Command Palette can be opened with a configurable keyboard shortcut. Choose from three options:
+
+| Shortcut | Notes |
+|----------|-------|
+| `⌘ Shift P` | Default. VS Code style, no conflict with WordPress |
+| `⌘ Shift K` | Shift variant |
+| `⌘ K` | Same shortcut WordPress uses on admin pages — may conflict |
+
+The shortcut is saved in `localStorage` and takes effect immediately without a page reload.
+
+### Saving branding settings
+
+Click **Save Settings** to persist your plugin name, menu label, and logo URL. A success toast confirms the save and reminds you to reload the page to see menu label changes.
+
+<Steps>
+  <Step title="Enter your values">
+    Fill in any combination of Plugin Name, Admin Menu Label, and Logo URL. Fields left blank revert to their defaults.
+  </Step>
+  <Step title="Click Save Settings">
+    Changes are sent to the REST API and stored in `wp_options`.
+  </Step>
+  <Step title="Reload the page">
+    Reload the browser tab. The new plugin name and menu label appear immediately.
+  </Step>
+</Steps>
+
+## Export / Import tab
+
+The Export / Import tab lets you bundle your plugin configuration into a portable JSON file and restore it on the same or a different site.
+
+### Settings export
+
+Select the sections you want to include — Branding, Maintenance, SMTP / Email, Image Settings, Code Snippets, Redirects, or Notes — then click **Export Selected**. The file downloads as `wmp-settings-YYYY-MM-DD.json`.
+
+The bundle is signed with an HMAC using the source site's WordPress authentication salt.
+
+<Warning>
+The export bundle includes SMTP passwords in plain text. Treat the downloaded file as a secret and do not commit it to version control.
+</Warning>
+
+### Settings import
+
+Drag a `.json` export file onto the drop zone, or click to browse for one. The plugin parses the file and shows a preview:
+
+- Exported date and source site URL
+- Plugin version at export time
+- Whether the file came from the same site (HMAC will match) or a different site (cross-site warning)
+
+Select which sections to overwrite, then click **Import**. A result summary shows which sections were imported and which were skipped.
+
+### WordPress content export
+
+Select a content type — All Content, Posts only, Pages only, Media only, or a custom post type slug — then click **Export XML**. The file downloads as a standard WordPress eXtended RSS (WXR) file compatible with WP Admin → Tools → Import.
+
+## Changelog tab
+
+The Changelog tab displays the full version history of WP Manager Pro as a collapsible accordion. Each version entry shows the release date and a list of features and fixes added in that version.
+
+The current version is expanded by default and highlighted so you can quickly confirm which version is installed and what it added.
+
+<Columns cols={2}>
+  <Card title="Current version" icon="tag">
+    The latest version accordion is open on page load and its header is visually highlighted.
+  </Card>
+  <Card title="All versions" icon="clock">
+    Click any other version header to expand it and read its release notes. Only one entry is open at a time.
+  </Card>
+</Columns>
+
+## FAQ tab
+
+The FAQ tab contains answers to 9 common questions about the plugin, displayed as an accordion.
+
+The questions cover:
+
+1. How to upgrade the plugin to a new version
+2. How to restore a database backup
+3. Whether it is safe to use on a production site
+4. What happens when you deactivate or delete the plugin
+5. How Code Snippets run (PHP on `init`, CSS in `wp_head`, JS in `wp_footer`)
+6. Whether the "Login As User" feature is a security risk
+7. Whether database backups are encrypted
+8. WordPress Multisite support status
+9. Why the admin menu label does not update immediately after saving
+
+For questions not listed, a direct link at the bottom of the FAQ tab opens a new GitHub issue at `github.com/nurkamol/wp-manager-pro`.
+
+## REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/settings` | Get current branding settings |
+| `POST` | `/settings` | Save branding settings |
+| `GET` | `/settings/export` | Export selected settings sections as JSON |
+| `POST` | `/settings/import` | Import settings from a JSON file |
+| `POST` | `/settings/export-wp-xml` | Export WordPress content as WXR XML |

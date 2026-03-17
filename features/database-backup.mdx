@@ -1,0 +1,78 @@
+---
+title: "Database Backup"
+description: "Full and table-specific SQL backups with scheduled automation"
+---
+
+Database Backup creates SQL dumps of your WordPress database and lets you download them directly from the browser. Backups are stored in a protected directory on your server and can be automated on a daily, weekly, or monthly schedule.
+
+To open Database Backup, click **WP Manager → Database Backup** in the WordPress admin sidebar.
+
+<Info>
+Backups are stored in `wp-content/wmp-backups/`. This directory is protected from direct web access. Always download a copy to a location outside your server as an offsite backup.
+</Info>
+
+## Creating a backup
+
+Click **Create Backup** in the top-right corner. WP Manager Pro generates a full SQL dump of all database tables and saves it to `wp-content/wmp-backups/`. A success toast shows the filename and file size when complete.
+
+## The backup list
+
+The backup list shows every backup file currently on the server with the following columns:
+
+| Column | Description |
+|--------|-------------|
+| **Filename** | The SQL dump filename, including a timestamp |
+| **Size** | The size of the backup file on disk |
+| **Created** | The date and time the backup was created |
+| **Actions** | Download and delete buttons |
+
+Click the **download** icon to save a backup to your computer. Click the **delete** icon to permanently remove a backup from the server.
+
+<Warning>
+Deleting a backup file is permanent. There is no recycle bin — the file is immediately removed from `wp-content/wmp-backups/`.
+</Warning>
+
+## Scheduled backups
+
+The **Scheduled Backups** card lets you configure automatic backups that run in the background via WP Cron.
+
+### Setting up a schedule
+
+<Steps>
+  <Step title="Enable auto-backup">
+    Toggle **Enable Auto-Backup** on.
+  </Step>
+  <Step title="Choose a frequency">
+    Select **Daily**, **Weekly**, or **Monthly** from the Frequency dropdown.
+  </Step>
+  <Step title="Set the retention limit">
+    Choose how many backups to keep: **3**, **5**, **10**, or **30**. Once the limit is reached, the oldest backup is deleted automatically before each new backup is created.
+  </Step>
+  <Step title="Save the schedule">
+    Click **Save Schedule**. The next scheduled run time appears below the form.
+  </Step>
+</Steps>
+
+### Retention and pruning
+
+When a scheduled backup runs and the number of existing backups equals or exceeds the retain limit, WP Manager Pro deletes the oldest file before creating the new one. This keeps your server storage predictable.
+
+<Tip>
+Use a daily schedule with a retain limit of 7 for a rolling week of backups. For a lighter footprint, weekly with a limit of 4 gives you a month of history.
+</Tip>
+
+### WP Cron dependency
+
+Scheduled backups rely on WordPress Cron. If your site has `DISABLE_WP_CRON` set to `true` and no real cron job configured, scheduled backups will not run. See [Cron Manager](/features/cron-manager) for instructions on setting up a real cron job.
+
+## REST API endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/wp-json/wp-manager-pro/v1/backup` | List backup files |
+| `POST` | `/wp-json/wp-manager-pro/v1/backup/create` | Create a new backup |
+| `POST` | `/wp-json/wp-manager-pro/v1/backup/download` | Prepare a backup for download |
+| `GET` | `/wp-json/wp-manager-pro/v1/backup/serve` | Stream a backup file to the browser |
+| `DELETE` | `/wp-json/wp-manager-pro/v1/backup/delete` | Delete a backup file |
+| `GET` | `/wp-json/wp-manager-pro/v1/backup/schedule` | Get the scheduled backup configuration |
+| `POST` | `/wp-json/wp-manager-pro/v1/backup/schedule` | Save the scheduled backup configuration |

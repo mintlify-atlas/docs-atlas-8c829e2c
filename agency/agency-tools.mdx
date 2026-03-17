@@ -1,0 +1,253 @@
+---
+title: "Agency Tools"
+description: "White-labeling, client reporting, and email management for agencies"
+---
+
+Agency Tools is a five-tab page added in v2.8.0. It groups every feature you need to deliver professional WordPress sites to clients: intercepting outgoing email in development, branding the login page, controlling what non-admin users see, generating health reports, and running a pre-launch coming-soon page.
+
+To open Agency Tools, click **WP Manager → Agency Tools** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Mail Interceptor">
+
+## Mail Interceptor
+
+The Mail Interceptor hooks into WordPress's `wp_mail()` function and records every outgoing email — recipient, subject, body, content type, and timestamp — in an in-plugin log. This gives you full visibility into what your site sends without leaving the dashboard.
+
+### Dev mode
+
+Toggle **Dev Mode** on to prevent real delivery. When Dev Mode is active, every `wp_mail()` call is still logged but the recipient address is replaced with `devnull@wmp-intercepted.invalid` before the message is sent, so no real emails reach users.
+
+The toggle label reflects the current state:
+- **Dev mode ON — emails intercepted** — emails are logged but not delivered
+- **Logging only — emails sent normally** — emails are delivered and logged
+
+<Warning>
+Disable Dev Mode before launching a site to production. While active, all outgoing WordPress emails — including password resets and WooCommerce order confirmations — are suppressed.
+</Warning>
+
+### Email log
+
+The log table lists every intercepted or sent email with:
+
+| Column | Description |
+|--------|-------------|
+| Subject | Email subject line |
+| Status | **Intercepted** (amber) when Dev Mode was on, **Sent** (green) when it was off |
+| To | Recipient address |
+| Date | Timestamp the email was processed |
+
+**Preview** — opens a dialog showing the full email body. HTML emails render as formatted HTML; plain-text emails display as pre-formatted text.
+
+**Resend** — re-sends the original email using the stored recipient, subject, and body. Useful for testing delivery after disabling Dev Mode.
+
+**Clear Log** — deletes all log entries. The button is disabled when the log is empty.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agency/mail-settings` | Current Dev Mode state and log entry count |
+| `POST` | `/agency/mail-settings` | Save Dev Mode on/off |
+| `GET` | `/agency/mail-log` | List all log entries |
+| `DELETE` | `/agency/mail-log/clear` | Clear all log entries |
+| `POST` | `/agency/mail-resend` | Resend an email by ID |
+
+  </Tab>
+  <Tab title="Login Page">
+
+## White-label login page
+
+The Login Page tab lets you replace WordPress's default `wp-login.php` design with your client's branding. A side-by-side live preview updates instantly as you change settings.
+
+### Enabling
+
+Use the **Active / Inactive** toggle at the top of the tab to turn the custom login page on or off without losing your saved settings.
+
+### Logo
+
+- **Logo URL** — paste a direct image URL or click **Media** to choose from the WordPress Media Library. A thumbnail preview appears below the field once a URL is set.
+- **Logo tooltip / heading text** — replaces the "Powered by WordPress" tooltip shown on logo hover and optionally adds a heading inside the login form card.
+
+<Note>
+Recommended logo dimensions: transparent PNG at 220×80 px or wider. The live preview shows the logo at its rendered size inside the preview card.
+</Note>
+
+### Colours
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Background colour | `#f0f0f1` | Full-page background when no background image is set |
+| Button colour | `#2271b1` | Fill colour of the Log In button |
+
+Each colour field has a swatch button that opens the native browser colour picker overlay alongside a hex input for precise entry.
+
+### Background image
+
+Click **Media** to select a background image from the Media Library, or paste a URL directly. When a background image is set it overrides the background colour.
+
+<Note>
+Recommended background image: 1920×1080 JPG. The image is displayed using `center/cover` sizing.
+</Note>
+
+### Page text and links
+
+- **Footer text** — small text shown below the login form, typically a copyright notice.
+- **Privacy Policy link** — toggle to show the site's built-in Privacy Policy page link below the form.
+- **Custom links HTML** — a textarea for any additional anchor tags you want to appear below the form (e.g. Terms of Service, Cookie Policy). Supports `href`, `target`, and `rel` attributes.
+
+### Live preview
+
+The preview panel on the right renders a simulated login page that reflects your settings in real time — background, logo, button colour, heading, and footer text. The preview updates without saving.
+
+### Saving
+
+Click **Save Login Settings** to persist all changes. Use the **Open login page** link to open `wp-login.php` in a new tab and verify the live result.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agency/login-page` | Current login page settings |
+| `POST` | `/agency/login-page` | Save login page settings |
+
+  </Tab>
+  <Tab title="Admin UI">
+
+## Admin UI customiser
+
+The Admin UI Customiser lets you hide WordPress admin menu items and dashboard widgets from non-administrator roles. Clients only see the parts of WP Admin that are relevant to them.
+
+<Note>
+Hidden items only apply to users who do not have the **Administrator** role. Administrators always see the full WordPress admin menu and all dashboard widgets.
+</Note>
+
+### Hiding menu items
+
+The **Admin Menu Items** card lists every registered top-level menu item with its slug. Check the box next to any item to hide it from non-admin users.
+
+<Note>
+The available menu list is populated from the active WordPress admin menu. If the list appears empty, open the WP Admin dashboard first to initialise the menu registry.
+</Note>
+
+### Hiding dashboard widgets
+
+The **Dashboard Widgets** card lists every registered dashboard widget with its context badge (e.g. `normal`, `side`). Check any widget to hide it from non-admin users.
+
+<Note>
+Widget availability is populated when the WordPress dashboard is loaded. If the list is empty, visit the WP Admin dashboard to register the widgets.
+</Note>
+
+### Saving
+
+Click **Save Admin UI Settings** to persist your selections. Changes take effect immediately on the next page load for non-admin users.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agency/admin-customiser` | Current hidden items and available items list |
+| `POST` | `/agency/admin-customiser` | Save hidden menus and widgets |
+
+  </Tab>
+  <Tab title="Client Report">
+
+## Client report generator
+
+The Client Report Generator produces a standalone HTML file that summarises site health for a client handover. The report is self-contained — fully inline CSS, no external dependencies — so you can email it or attach it to a project handover document.
+
+### Generating a report
+
+Click **Generate Report**. The plugin fetches live data from the server and displays a preview:
+
+- **Health score** — a 0–100 numeric score visualised as a circular progress ring. Green at ≥80, amber at 60–79, red below 60.
+- **Site name and URL**
+- **Generated timestamp**
+
+### Report contents
+
+The preview grid shows eight status tiles:
+
+| Tile | Details |
+|------|---------|
+| WordPress version | Installed WP version |
+| PHP version | Server PHP version |
+| Database size | Total database size in MB |
+| Pending updates | Count of available plugin/theme/core updates (amber when > 0) |
+| SSL | Active (green) or Not active (red) |
+| WP_DEBUG | Off (green, safe for production) or On (amber, should be disabled) |
+| Active plugins | Total count of active plugins |
+| Last backup | Date of the most recent database backup |
+
+Below the grid, a full plugin list shows every active plugin with its version and an **Update available** badge where applicable.
+
+### Downloading or sharing
+
+- **Download Report** — saves the HTML file as `site-report-<site-name>.html`.
+- **Copy HTML** — copies the full HTML source to the clipboard. The button shows a checkmark for two seconds after copying.
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agency/report` | Generate and return report data |
+
+  </Tab>
+  <Tab title="Coming Soon">
+
+## Coming Soon mode
+
+Coming Soon Mode shows a pre-launch marketing page to visitors while administrators see the live site normally. Unlike Maintenance Mode (which returns a `503 Service Unavailable` status), the Coming Soon page returns `200 OK` — making it suitable for SEO pre-launch.
+
+### Enabling
+
+Use the **Active / Inactive** toggle at the top of the tab to turn Coming Soon Mode on or off.
+
+### Logo and background
+
+- **Logo image** — optional. Enter a URL or click **Media** to pick from the WordPress Media Library.
+- **Background image** — optional. Overrides the background colour when set. Enter a URL or click **Media**.
+
+### Page content
+
+| Field | Description |
+|-------|-------------|
+| Heading | Main heading on the coming soon page. Defaults to `Coming Soon`. |
+| Message | Body text below the heading. |
+| Launch Date & Time | ISO datetime used to drive the countdown timer. Leave empty to hide the timer. |
+
+The countdown timer displays individual glass-card tiles for Days, Hours, Minutes, and Seconds. The tiles use the accent colour for their number labels.
+
+### Colours
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Background colour | `#0f172a` | Full-page background when no background image is set |
+| Accent colour | `#6366f1` | Countdown tile numbers and decorative accents |
+
+Each colour field includes a swatch button that opens the native browser colour picker alongside a hex input.
+
+### Email capture
+
+Enable the **email capture form** to show a "Notify Me" subscription input on the coming-soon page. Visitors enter their email address and it is stored server-side.
+
+When email capture is on and emails have been collected:
+- The number of captured emails is shown.
+- **Copy Emails** copies all addresses as a newline-separated list to the clipboard.
+- **Export CSV** downloads the list as a `.csv` file.
+- **Clear List** deletes all captured emails after confirmation.
+
+<Note>
+Captured emails are stored in WordPress options. They are not forwarded to any external service automatically — export them and import into your preferred email marketing tool.
+</Note>
+
+### REST endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agency/coming-soon` | Current coming soon settings and captured emails |
+| `POST` | `/agency/coming-soon` | Save coming soon settings |
+| `DELETE` | `/agency/coming-soon/emails/clear` | Clear all captured email addresses |
+
+  </Tab>
+</Tabs>

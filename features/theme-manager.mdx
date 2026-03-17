@@ -1,0 +1,122 @@
+---
+title: "Theme Manager"
+description: "Browse, activate, and manage WordPress themes"
+---
+
+Theme Manager lists all installed themes with their screenshots, parent/child relationships, version, and pending update status. You can activate, delete, export, update, install from WordPress.org, or install any specific version.
+
+To open Theme Manager, click **WP Manager → Theme Manager** in the WordPress admin sidebar.
+
+<Tabs>
+  <Tab title="Managing themes">
+
+## Installed themes grid
+
+Installed themes are shown as cards in a grid. Each card displays:
+- Theme screenshot (16:9 aspect ratio)
+- Theme name and version
+- Author name
+- A **Child of [parent]** badge for child themes
+- An **Active** badge (blue ring and badge) for the currently active theme
+- An **Update** badge (amber) if a newer version is available
+
+Use the search box to filter by theme name or author.
+
+### Activate a theme
+
+Click **Activate** on any inactive theme card. Only one theme can be active at a time.
+
+### Delete a theme
+
+Click the trash icon on an inactive theme card. A confirmation dialog appears before deletion. The active theme cannot be deleted — the trash icon is hidden for the active theme.
+
+<Warning>
+Deleting a theme removes it from disk permanently. If it is a parent theme, any child themes that depend on it will break.
+</Warning>
+
+### Export a theme as ZIP
+
+Click the download icon on any theme card to export the theme as a `.zip` archive. The browser downloads the file immediately.
+
+### One-click update
+
+When an **Update** badge is visible, an amber **Update** button appears on the theme card. Click it to update the theme to the latest version from WordPress.org.
+
+### Check for updates
+
+Click the **Check Updates** button in the top-right corner to force WordPress to re-query WordPress.org for fresh theme update data. The grid refreshes without a page reload.
+
+  </Tab>
+  <Tab title="Installing themes">
+
+## Install from WordPress.org
+
+<Steps>
+  <Step title="Open the Search & Install tab">
+    Click the **Search & Install** tab at the top of Theme Manager.
+  </Step>
+  <Step title="Search for a theme">
+    Type the theme name in the search box and press **Enter** or click **Search**. Results are fetched from the WordPress.org theme API and display up to 12 matches with screenshots, ratings, and versions.
+  </Step>
+  <Step title="Install or update">
+    Each result card shows one of three buttons:
+    - **Install Theme** — theme is not yet installed
+    - **Update** (amber) — theme is installed but a newer version is available
+    - **Installed ✓** (disabled) — theme is already on the latest version
+
+    Click **Install Theme** to download and install it from WordPress.org.
+  </Step>
+</Steps>
+
+## Upload a ZIP
+
+Use the **Upload ZIP** tab to install a theme from a local `.zip` file.
+
+<Steps>
+  <Step title="Open the Upload ZIP tab">
+    Click the **Upload ZIP** tab.
+  </Step>
+  <Step title="Select or drop a file">
+    Drag a `.zip` file onto the drop zone or click it to open a file picker. One file at a time is supported for themes.
+  </Step>
+  <Step title="(Optional) enable overwrite">
+    Check **Overwrite if exists** to replace an already-installed theme's files.
+  </Step>
+  <Step title="Install">
+    Click **Upload & Install Theme**. The theme is installed and the grid updates.
+  </Step>
+</Steps>
+
+<Note>
+Only `.zip` files are accepted.
+</Note>
+
+  </Tab>
+  <Tab title="Version history">
+
+## Version History dialog
+
+The Version History dialog lets you install any version of a theme published on WordPress.org — useful for rolling back a theme that broke after an update.
+
+<Steps>
+  <Step title="Open the dialog">
+    Click the clock/history icon (⏱) on any theme card.
+  </Step>
+  <Step title="Browse available versions">
+    All available versions are listed newest first. The currently installed version is highlighted with a **Current** badge.
+  </Step>
+  <Step title="Install a version">
+    Click **Install** next to the target version. The theme is replaced at that version. If the theme was active before, it remains active.
+  </Step>
+</Steps>
+
+<Warning>
+Installing an older version downgrades the theme. Update again promptly if the older version has known security issues.
+</Warning>
+
+<Note>
+Version history is only available for themes hosted on WordPress.org. Custom or premium themes will show "No version history available from WordPress.org."
+</Note>
+
+  </Tab>
+</Tabs>

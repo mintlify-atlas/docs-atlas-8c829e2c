@@ -1,0 +1,97 @@
+---
+title: "Login Protection"
+description: "Move your login page and limit brute-force attacks"
+---
+
+The **Login** tab of the Security Suite provides two complementary brute-force defences: relocating the WordPress login page to a secret URL and automatically locking out IPs that repeatedly fail to authenticate.
+
+To open this tab, click **WP Manager → Security** and select the **Login** tab.
+
+<Tabs>
+  <Tab title="Admin URL protection">
+
+## Admin URL protection
+
+Admin URL protection moves the default `wp-login.php` endpoint to a secret slug of your choosing. Any direct GET request to the original login path is silently redirected to the site homepage. POST requests (form submission) and password-reset flows (`lostpassword`, `resetpass`, `rp`) continue to work normally, so your users can still recover their passwords.
+
+<Warning>
+Copy and save the new login URL **before** you click **Enable**. If you lose the URL, you can recover access by deactivating the plugin via FTP or by directly deleting the `wmp_admin_slug` option from your `wp_options` table.
+</Warning>
+
+<Steps>
+  <Step title="Enter a secret slug">
+    Type a slug in the text field — for example, `my-secret-login`. The slug must be at least 4 characters and may only contain lowercase letters, numbers, hyphens, and underscores. The following names are reserved and cannot be used: `wp-admin`, `wp-login`, `wp-content`, `wp-includes`, `admin`, `login`, `dashboard`.
+  </Step>
+  <Step title="Enable protection">
+    Click **Enable**. WP Manager Pro stores the slug in `wp_options` under the key `wmp_admin_slug`. From this point, your login page is accessible at `yoursite.com/your-secret-slug/`.
+  </Step>
+  <Step title="Copy the new login URL">
+    After enabling, a green banner displays the full custom login URL with copy and open buttons. Copy the URL and store it somewhere safe before closing the page.
+  </Step>
+  <Step title="Disable protection (if needed)">
+    Click **Disable Protection** to restore the default `wp-login.php` endpoint. The slug option is deleted from `wp_options`.
+  </Step>
+</Steps>
+
+### How the redirect works
+
+WP Manager Pro hooks into `login_init` to inspect every GET request to `wp-login.php`. If the request does not include the secret slug as a query parameter, the visitor is redirected to the homepage with `wp_safe_redirect()`. When a visitor hits the custom slug URL, the `init` hook rewrites the request to `wp-login.php` transparently.
+
+After logout, users are redirected to the custom login URL rather than the default `wp-login.php`.
+
+  </Tab>
+  <Tab title="Login attempt limiter">
+
+## Login attempt limiter
+
+The login attempt limiter tracks failed authentication attempts per IP address using WordPress transients. When an IP exceeds the configured threshold within the counting window, that IP is locked out for the configured duration. Lockout state is also stored as a transient so it survives page loads but clears automatically when it expires.
+
+The lockout check fires on the `authenticate` filter at priority 30, before WordPress processes credentials.
+
+<Steps>
+  <Step title="Enable the limiter">
+    Toggle **Enable login limiter** on.
+  </Step>
+  <Step title="Configure the thresholds">
+    Set the three parameters:
+
+    | Field | Default | Description |
+    |-------|---------|-------------|
+    | Max Attempts | 5 | Number of failed logins before lockout |
+    | Window (seconds) | 300 | Time period in which attempts are counted |
+    | Lockout (seconds) | 900 | How long the IP is blocked after exceeding the limit |
+  </Step>
+  <Step title="Save settings">
+    Click **Save Settings**. The values are written to `wp_options` keys `wmp_limiter_threshold`, `wmp_limiter_window`, and `wmp_limiter_duration`.
+  </Step>
+</Steps>
+
+<Note>
+Attempt counts are stored as transients with the key `wmp_attempts_{md5(ip)}` and expire after the counting window. Each failed login prunes entries older than the window before appending the new timestamp, so only recent attempts count toward the threshold.
+</Note>
+
+  </Tab>
+  <Tab title="Lockout log">
+
+## Lockout log
+
+Every time an IP is locked out, WP Manager Pro records an entry in the lockout log stored in `wp_options` (`wmp_lockout_log`). The log retains the last 500 entries.
+
+Each entry shows:
+- **IP** — the locked-out IP address
+- **Username** — the username that was attempted
+- **Time** — timestamp of the lockout event
+- **Attempts** — number of failed attempts that triggered the lockout
+
+### Managing lockouts
+
+| Action | Description |
+|--------|-------------|
+| **Refresh** | Reload the lockout list from the server |
+| **Unlock** | Delete the lockout transient for a specific IP and remove it from the log |
+| **Clear** | Delete all lockout log entries and remove all active lockout transients |
+
+Clicking **Unlock** on an IP calls `DELETE /wp-json/wp-manager-pro/v1/security/lockouts/unlock` and also deletes the `wmp_lockout_{md5(ip)}` transient, immediately re-allowing login attempts from that IP.
+
+  </Tab>
+</Tabs>

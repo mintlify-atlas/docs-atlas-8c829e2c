@@ -1,0 +1,263 @@
+---
+title: "Images API"
+description: "REST endpoints for image settings, thumbnail regeneration, and WebP/AVIF conversion"
+---
+
+The images endpoints manage upload behavior (WebP/AVIF conversion, SVG support, dimension limits, JPEG quality), regenerate thumbnails, and run batch format conversion jobs across the existing media library.
+
+## GET /images/settings
+
+Returns all current image processing settings along with server support status for each image format.
+
+```bash
+curl https://yoursite.com/wp-json/wp-manager-pro/v1/images/settings \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="webp_enabled" type="boolean">
+  Whether uploaded images are automatically converted to WebP.
+</ResponseField>
+
+<ResponseField name="avif_enabled" type="boolean">
+  Whether uploaded images are also converted to AVIF.
+</ResponseField>
+
+<ResponseField name="svg_enabled" type="boolean">
+  Whether SVG uploads are permitted.
+</ResponseField>
+
+<ResponseField name="svg_allowed_roles" type="string[]">
+  Role keys allowed to upload SVG files when SVG uploads are enabled.
+</ResponseField>
+
+<ResponseField name="max_width" type="number">
+  Maximum image width in pixels. `0` means unlimited.
+</ResponseField>
+
+<ResponseField name="max_height" type="number">
+  Maximum image height in pixels. `0` means unlimited.
+</ResponseField>
+
+<ResponseField name="jpeg_quality" type="number">
+  JPEG compression quality (0–100). Default: `82`.
+</ResponseField>
+
+<ResponseField name="webp_serve_webp" type="boolean">
+  Whether WebP sidecars are served transparently via `wp_get_attachment_url` and `.htaccess` rewrite rules.
+</ResponseField>
+
+<ResponseField name="webp_delete_originals" type="boolean">
+  Whether the original file is deleted and replaced by the WebP version after conversion.
+</ResponseField>
+
+<ResponseField name="gd_support" type="boolean">
+  Whether the GD extension is loaded on the server.
+</ResponseField>
+
+<ResponseField name="imagick_support" type="boolean">
+  Whether the Imagick extension is loaded.
+</ResponseField>
+
+<ResponseField name="webp_support" type="boolean">
+  Whether the server can produce WebP output.
+</ResponseField>
+
+<ResponseField name="avif_support" type="boolean">
+  Whether the server can produce AVIF output.
+</ResponseField>
+
+<ResponseField name="thumbnail_sizes" type="object">
+  All registered image sizes keyed by size name, each with `name`, `width`, `height`, and `crop` fields.
+</ResponseField>
+
+---
+
+## POST /images/settings
+
+Saves image processing settings.
+
+### Request body
+
+<ParamField body="webp_enabled" type="boolean">
+  Enable or disable WebP conversion on upload.
+</ParamField>
+
+<ParamField body="avif_enabled" type="boolean">
+  Enable or disable AVIF conversion on upload. Requires PHP 8.1+ with `imageavif` or Imagick with AVIF support.
+</ParamField>
+
+<ParamField body="svg_enabled" type="boolean">
+  Enable or disable SVG uploads. Uploaded SVGs are sanitized server-side.
+</ParamField>
+
+<ParamField body="svg_allowed_roles" type="string[]">
+  Role keys allowed to upload SVGs.
+</ParamField>
+
+<ParamField body="max_width" type="number">
+  Maximum upload width in pixels. `0` disables the limit.
+</ParamField>
+
+<ParamField body="max_height" type="number">
+  Maximum upload height in pixels. `0` disables the limit.
+</ParamField>
+
+<ParamField body="jpeg_quality" type="number">
+  JPEG quality (0–100).
+</ParamField>
+
+<ParamField body="webp_serve_webp" type="boolean">
+  Serve WebP sidecar files transparently to WebP-capable browsers. Writes Apache rewrite rules to `uploads/.htaccess` when enabled.
+</ParamField>
+
+<ParamField body="webp_delete_originals" type="boolean">
+  Replace original files with their WebP version after conversion.
+</ParamField>
+
+### Response
+
+```json
+{ "success": true, "message": "Image settings saved successfully." }
+```
+
+---
+
+## POST /images/regenerate
+
+Regenerates all registered thumbnail sizes for every image in the media library. This is a synchronous operation — for large libraries it may take several minutes.
+
+```bash
+curl -X POST https://yoursite.com/wp-json/wp-manager-pro/v1/images/regenerate \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  Always `true` on success.
+</ResponseField>
+
+<ResponseField name="processed" type="number">
+  Number of images whose thumbnails were regenerated.
+</ResponseField>
+
+<ResponseField name="errors" type="number">
+  Number of images that could not be processed (missing file or editor error).
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable summary.
+</ResponseField>
+
+---
+
+## POST /images/convert
+
+Batch-converts a slice of the media library to WebP or AVIF. The frontend calls this endpoint in a loop, incrementing `offset` by the returned `next_offset` until `has_more` is `false`.
+
+### Request body
+
+<ParamField body="format" type="string" default="webp">
+  Target format. Must be `"webp"` or `"avif"`.
+</ParamField>
+
+<ParamField body="offset" type="number" default="0">
+  Zero-based offset into the full list of convertible images.
+</ParamField>
+
+<ParamField body="limit" type="number" default="10">
+  Number of images to process per call. Maximum: `50`.
+</ParamField>
+
+<ParamField body="delete_original" type="boolean">
+  If `true` (WebP only), the original file is deleted and the attachment record is updated to point to the WebP file.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  Always `true` on success.
+</ResponseField>
+
+<ResponseField name="converted" type="number">
+  Images converted in this batch.
+</ResponseField>
+
+<ResponseField name="skipped" type="number">
+  Images skipped because a sidecar already exists.
+</ResponseField>
+
+<ResponseField name="errors" type="number">
+  Images that could not be converted.
+</ResponseField>
+
+<ResponseField name="has_more" type="boolean">
+  `true` if there are more images to process beyond this batch.
+</ResponseField>
+
+<ResponseField name="next_offset" type="number">
+  Offset to use in the next request.
+</ResponseField>
+
+---
+
+## GET /images/convert-stats
+
+Returns conversion progress statistics for a given format.
+
+```bash
+curl "https://yoursite.com/wp-json/wp-manager-pro/v1/images/convert-stats?format=webp" \
+  -H "X-WP-Nonce: <nonce>"
+```
+
+### Query parameters
+
+<ParamField query="format" type="string" default="webp">
+  Format to check. One of `"webp"` or `"avif"`.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="total" type="number">
+  Total number of JPEG/PNG/GIF/BMP/TIFF images in the media library.
+</ResponseField>
+
+<ResponseField name="converted" type="number">
+  Number of images that already have a sidecar file in the requested format.
+</ResponseField>
+
+<ResponseField name="remaining" type="number">
+  Images that have not yet been converted (`total - converted`).
+</ResponseField>
+
+---
+
+## DELETE /images/convert
+
+Deletes all sidecar files (`.webp` or `.avif`) generated by the batch converter. Original source files are not affected.
+
+<Warning>
+  This operation cannot be undone. All converted sidecar files will be permanently deleted from disk.
+</Warning>
+
+### Request body
+
+<ParamField body="format" type="string" required>
+  Format of sidecars to delete. Must be `"webp"` or `"avif"`.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="success" type="boolean">
+  Always `true` on success.
+</ResponseField>
+
+<ResponseField name="deleted" type="number">
+  Number of sidecar files removed from disk.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable summary.
+</ResponseField>
