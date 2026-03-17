@@ -1,0 +1,180 @@
+{
+  "projectType": "saas",
+  "projectName": "WP Manager Pro",
+  "projectDescription": "An agency-ready WordPress management suite providing a single React-powered control panel for plugins, themes, files, database, security, and developer tools.",
+  "theme": "linden",
+  "primaryColor": "#94cb04",
+  "lightColor": "#545454",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart",
+              "requirements"
+            ]
+          },
+          {
+            "group": "Site Management",
+            "pages": [
+              "features/dashboard",
+              "features/plugin-manager",
+              "features/theme-manager",
+              "features/file-manager",
+              "features/database-manager",
+              "features/user-manager"
+            ]
+          },
+          {
+            "group": "Maintenance & Tools",
+            "pages": [
+              "features/maintenance-mode",
+              "features/debug-tools",
+              "features/image-tools",
+              "features/cron-manager",
+              "features/media-manager",
+              "features/reset-tools"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/code-snippets",
+              "features/redirect-manager",
+              "features/email-smtp",
+              "features/database-backup",
+              "features/audit-log",
+              "features/performance",
+              "features/content-tools",
+              "features/notes"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
+              "security/overview",
+              "security/login-protection",
+              "security/hardening",
+              "security/integrity-check",
+              "security/two-factor-auth",
+              "security/security-scanner"
+            ]
+          },
+          {
+            "group": "Agency & Developer",
+            "pages": [
+              "agency/agency-tools",
+              "agency/developer-utilities",
+              "agency/settings-branding"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Core Endpoints",
+            "pages": [
+              "api/dashboard",
+              "api/plugins",
+              "api/themes",
+              "api/files",
+              "api/database",
+              "api/users"
+            ]
+          },
+          {
+            "group": "Tools Endpoints",
+            "pages": [
+              "api/maintenance",
+              "api/debug",
+              "api/images",
+              "api/cron",
+              "api/media",
+              "api/reset"
+            ]
+          },
+          {
+            "group": "Advanced Endpoints",
+            "pages": [
+              "api/snippets",
+              "api/redirects",
+              "api/email",
+              "api/backup",
+              "api/audit",
+              "api/security",
+              "api/settings",
+              "api/developer"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Plugin Manager — install, update, activate/deactivate, version history, WP.org search",
+    "Theme Manager — browse, activate, upload, export, version history",
+    "File Manager — Monaco Editor with full syntax highlighting, upload, rename, delete",
+    "Database Manager — table browser, row CRUD, search & replace, SQL runner, export",
+    "User Manager — role management, username rename, login-as impersonation",
+    "Security Suite — admin URL protection, login limiter, 2FA, core integrity, IP blocklist",
+    "Security Scanner — malware detection, vulnerability CVE check, SSL monitor",
+    "Maintenance Mode — fully styled maintenance page with live preview",
+    "Image Tools — WebP/AVIF conversion, thumbnail regeneration, SVG uploads",
+    "Agency Tools — mail interceptor, white-label login, admin UI customiser, client reports",
+    "Developer Utilities — hook explorer, REST API tester, dummy data generator, rewrite tester",
+    "Code Snippets — run custom PHP, CSS, JS from dashboard with Monaco Editor",
+    "Database Backup — full/table SQL dumps, scheduled backups, download/delete",
+    "Cron Manager — event scheduling, custom schedules, manual trigger, health check",
+    "Media Manager — orphan cleanup, duplicate finder, image compression"
+  ],
+  "publicApiSurface": [
+    "GET /wp-json/wp-manager-pro/v1/dashboard",
+    "GET /wp-json/wp-manager-pro/v1/plugins",
+    "POST /wp-json/wp-manager-pro/v1/plugins/activate",
+    "POST /wp-json/wp-manager-pro/v1/plugins/deactivate",
+    "DELETE /wp-json/wp-manager-pro/v1/plugins/delete",
+    "POST /wp-json/wp-manager-pro/v1/plugins/install",
+    "POST /wp-json/wp-manager-pro/v1/plugins/update",
+    "GET /wp-json/wp-manager-pro/v1/themes",
+    "POST /wp-json/wp-manager-pro/v1/themes/activate",
+    "GET /wp-json/wp-manager-pro/v1/files",
+    "POST /wp-json/wp-manager-pro/v1/files/write",
+    "GET /wp-json/wp-manager-pro/v1/database/tables",
+    "POST /wp-json/wp-manager-pro/v1/database/query",
+    "POST /wp-json/wp-manager-pro/v1/database/search-replace",
+    "GET /wp-json/wp-manager-pro/v1/users",
+    "POST /wp-json/wp-manager-pro/v1/users/login-as",
+    "GET /wp-json/wp-manager-pro/v1/maintenance",
+    "POST /wp-json/wp-manager-pro/v1/maintenance/toggle",
+    "POST /wp-json/wp-manager-pro/v1/debug/toggle",
+    "GET /wp-json/wp-manager-pro/v1/security/overview",
+    "POST /wp-json/wp-manager-pro/v1/security/2fa/setup",
+    "POST /wp-json/wp-manager-pro/v1/security/2fa/verify",
+    "GET /wp-json/wp-manager-pro/v1/cron/events",
+    "POST /wp-json/wp-manager-pro/v1/cron/run",
+    "GET /wp-json/wp-manager-pro/v1/backup",
+    "POST /wp-json/wp-manager-pro/v1/backup/create",
+    "GET /wp-json/wp-manager-pro/v1/snippets",
+    "POST /wp-json/wp-manager-pro/v1/snippets",
+    "GET /wp-json/wp-manager-pro/v1/developer/hooks",
+    "POST /wp-json/wp-manager-pro/v1/developer/rest-request",
+    "POST /wp-json/wp-manager-pro/v1/developer/generate",
+    "GET /wp-json/wp-manager-pro/v1/settings",
+    "POST /wp-json/wp-manager-pro/v1/settings"
+  ]
+}
